@@ -1,0 +1,10 @@
+include CHANGELOG.md
+include README.md
+include LICENSE
+include pyproject.toml
+include django_redis_search/py.typed
+
+recursive-include django_redis_search *
+
+global-exclude __pycache__
+global-exclude *.py[co]

@@ -1,0 +1,123 @@
+{% load build_query_string %}
+
+<!DOCTYPE html>
+<html>
+    <head>
+        <style>
+            table {
+                font-family: arial, sans-serif;
+                border-collapse: collapse;
+                width: 100%;
+            }
+            td,
+            th {
+                border: 1px solid #dddddd;
+                text-align: left;
+                padding: 8px;
+            }
+            tr:nth-child(even) {
+                background-color: #dddddd;
+            }
+            body {
+                width: 80%;
+                height: auto;
+                margin: 0 auto;
+                padding: 1px;
+            }
+        </style>
+    </head>
+    <body>
+        <h2>Django Redis Search Example</h2>
+        <form method="get">
+            <fieldset>
+                <legend><h4>Full Text Search</h4></legend>
+                <b>Search Query</b><br /><br />
+                <input type="text" name="query" placeholder="Search..." value="{{ request.GET.query }}" /><br /><br />
+
+                <b>Min Price</b><br /><br />
+                <input type="number" name="min_price" placeholder="Min Price" value="{{ request.GET.min_price }}" /><br /><br />
+                <b>Max Price</b><br /><br />
+                <input type="text" name="max_price" placeholder="Max Price" value="{{ request.GET.max_price }}" /><br /><br />
+
+                <b>Sort</b><br /><br />
+                <input type="radio" id="sort-price-a" name="sort" value="price" {% if "price" in query_data.sort %}checked{% endif %}>
+                <label for="sort-price-a"> Price (Low to High)</label><br />
+                <input type="radio" id="sort-price-d" name="sort" value="-price" {% if "-price" in query_data.sort %}checked{% endif %}>
+                <label for="sort-price-d"> Price (High to Low)</label><br /><br />
+
+                <input type="radio" id="sort-name-a" name="sort" value="name" {% if "name" in query_data.sort %}checked{% endif %}>
+                <label for="sort-name-a"> Name (A-Z)</label><br />
+                <input type="radio" id="sort-name-d" name="sort" value="-name" {% if "-name" in query_data.sort %}checked{% endif %}>
+                <label for="sort-name-d"> Name (Z-A)</label><br /><br />
+
+                <b>Category</b><br /><br />
+                {% for category in facets.0 %}
+                <input type="checkbox" id="category-{{ forloop.counter }}" name="category" value="{{ category.category_name }}" {% if category.category_name in query_data.category %}checked{% endif %} />
+                <label for="category-{{ forloop.counter }}"> {{ category.category_name }} ({{ category.count }})</label><br />
+                {% endfor %}<br />
+
+                <b>Tags</b><br /><br />
+                {% for tag in facets.1 %}
+                <input type="checkbox" id="tag-{{ forloop.counter }}" name="tags" value="{{ tag.tags_name }}" {% if tag.tags_name in query_data.tags %}checked{% endif %} />
+                <label for="tag-{{ forloop.counter }}"> {{ tag.tags_name }} ({{ tag.count }})</label><br />
+                {% endfor %}<br />
+
+                <input type="submit" value="Search" />
+            </fieldset>
+        </form>
+
+        <h3>Search results ({{ object_list.count }})</h3>
+
+        <table>
+            <tr>
+                <th># ID</th>
+                <th>Product Name</th>
+                <th>Vendor</th>
+                <th>Price</th>
+                <th>Quantity</th>
+                <th>Category</th>
+                <th>Tags</th>
+                <th>Added At</th>
+            </tr>
+            {% for result in object_list %}
+                <tr>
+                    <td>{{ result.id }}</td>
+                    <td>{{ result.name }}</td>
+                    <td>{{ result.vendor.name }}</td>
+                    <td>{{ result.price }} $</td>
+                    <td>{{ result.quantity }}</td>
+                    <td>{{ result.category.name }}</td>
+                    <td>{% for tag in result.tags %} {{ tag.name }} {% if not forloop.last %}, {% endif %}{% endfor %}</td>
+                    <td>{{ result.created_at }}</td>
+                </tr>
+            {% empty %}
+                <td colspan="8">No results found.</td>
+            {% endfor %}
+        </table>
+
+        {% if is_paginated %}
+            <ul class="pagination" style="display: block;">
+                {% if page_obj.has_previous %}
+                    <li style="display: inline;"><a href="?page={{ page_obj.previous_page_number }}{% query_string request %}">&laquo;</a></li>
+                {% else %}
+                    <li style="display: inline;" class="disabled"><span>&laquo;</span></li>
+                {% endif %}
+                {% for i in paginator.page_range %}
+                    {% if page_obj.number == i %}
+                        <li style="display: inline;" class="active">
+                            <span>{{ i }} <span class="sr-only">(current)</span></span>
+                        </li>
+                    {% else %}
+                        <li style="display: inline;"><a href="?page={{ i }}{% query_string request %}">{{ i }}</a></li>
+                    {% endif %}
+                {% endfor %}
+                {% if page_obj.has_next %}
+                    <li style="display: inline;"><a href="?page={{ page_obj.next_page_number }}{% query_string request %}">&raquo;</a></li>
+                {% else %}
+                    <li style="display: inline;" class="disabled"><span>&raquo;</span></li>
+                {% endif %}
+            </ul>
+        {% endif %}
+    <br />
+    </body>
+</html>
