@@ -2,7 +2,7 @@ from django.utils.functional import cached_property
 from django.views.generic import ListView
 from redis.commands.search import reducers
 
-from django_redis_search.mixins import ListViewMixin
+from redis_search_django.mixins import ListViewMixin
 
 from .documents import ProductDocument
 from .models import Product

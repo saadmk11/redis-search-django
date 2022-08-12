@@ -4,7 +4,7 @@ from typing import Any
 from django.core.management import BaseCommand
 from redis_om import Migrator, get_redis_connection
 
-from django_redis_search.registry import document_registry
+from redis_search_django.registry import document_registry
 
 
 class Command(BaseCommand):

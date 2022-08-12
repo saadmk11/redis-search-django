@@ -2,9 +2,9 @@ include CHANGELOG.md
 include README.md
 include LICENSE
 include pyproject.toml
-include django_redis_search/py.typed
+include redis_search_django/py.typed
 
-recursive-include django_redis_search *
+recursive-include redis_search_django *
 
 global-exclude __pycache__
 global-exclude *.py[co]

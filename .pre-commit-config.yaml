@@ -41,5 +41,5 @@ repos:
   rev: v0.971
   hooks:
   - id: mypy
-    files: ^django_redis_search/
+    files: ^redis_search_django/
     additional_dependencies: [types-redis]

@@ -3,7 +3,7 @@ from typing import List, Optional
 from django.db import models
 from redis_om import Field
 
-from django_redis_search.documents import EmbeddedJsonDocument, JsonDocument
+from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
 
 from .models import Category, Product, Tag, Vendor
 
