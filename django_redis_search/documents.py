@@ -121,8 +121,9 @@ class Document(RedisModel, ABC):
                 # If the field is required and the value is None, raise an error
                 if value is None and field.required:
                     raise ValueError(
-                        f"Field '{field_name}' is required, either use a Django model field "
-                        f"or define 'prepare_{field_name}' class method on the '{cls.__name__}' class "
+                        f"Field '{field_name}' is required, either use a Django "
+                        f"model field or define 'prepare_{field_name}' class "
+                        f"method on the '{cls.__name__}' class "
                         f"that returns a value of type {field_type}"
                     )
                 data[field_name] = value

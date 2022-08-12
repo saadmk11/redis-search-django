@@ -22,11 +22,12 @@ class RediSearchResult:
         return repr(self)
 
     def __repr__(self) -> str:
-        return "<%s %s of %s>" % (self.__class__.__name__, len(self), self.hit_count)
+        return "<{} {} of {}>".format(
+            self.__class__.__name__, len(self), self.hit_count
+        )
 
     def __iter__(self, *args: Any, **kwargs: Any) -> Generator[Any, None, None]:
-        for item in self.results:
-            yield item
+        yield from self.results
 
     def __len__(self) -> int:
         return len(self.results)

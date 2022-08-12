@@ -35,7 +35,9 @@ class VendorDocument(EmbeddedJsonDocument):
     # identifier: str = Field(index=True)
     # name: str = Field(index=True, full_text_search=True, sortable=True)
     # email: str = Field(index=True, full_text_search=True, sortable=True)
-    # establishment_date: datetime.date = Field(index=True, full_text_search=True, sortable=True)
+    # establishment_date: datetime.date = Field(
+    #     index=True, full_text_search=True, sortable=True
+    # )
 
     class Django:
         model = Vendor

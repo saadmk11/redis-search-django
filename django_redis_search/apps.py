@@ -6,4 +6,4 @@ class DjangoRedisSearchConfig(AppConfig):
     name = "django_redis_search"
 
     def ready(self) -> None:
-        import django_redis_search.signals
+        import django_redis_search.signals  # noqa: F401
