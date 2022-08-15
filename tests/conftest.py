@@ -75,7 +75,7 @@ def nested_document_class(document_class):
 
 
 @pytest.fixture
-def product():
+def product_obj():
     return Product.objects.create(
         name="Test",
         price=10.0,
@@ -86,16 +86,16 @@ def product():
 
 
 @pytest.fixture
-def get_tag():
+def tag_obj():
     return Tag.objects.create(name="Test")
 
 
 @pytest.fixture
-def get_category():
+def category_obj():
     return Category.objects.create(name="Test")
 
 
 @pytest.fixture
-def get_product_with_tag(product, get_tag):
-    product.tags.add(get_tag)
-    return product, get_tag
+def get_product_with_tag(product_obj, tag_obj):
+    product_obj.tags.add(tag_obj)
+    return product_obj, tag_obj

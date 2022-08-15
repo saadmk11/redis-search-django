@@ -39,11 +39,11 @@ def test_remove_related_model_data_from_redis_index(document_registry):
 
 @pytest.mark.django_db
 @mock.patch("redis_search_django.signals.document_registry")
-def test_update_redis_index_on_m2m_changed_add(document_registry, product, get_tag):
-    product.tags.add(get_tag)
-    document_registry.update_document.assert_called_once_with(product, create=True)
+def test_update_redis_index_on_m2m_changed_add(document_registry, product_obj, tag_obj):
+    product_obj.tags.add(tag_obj)
+    document_registry.update_document.assert_called_once_with(product_obj, create=True)
     document_registry.update_related_documents.assert_called_once_with(
-        product, exclude=None
+        product_obj, exclude=None
     )
 
 

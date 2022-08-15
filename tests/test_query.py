@@ -107,9 +107,8 @@ def test_search_result_exists():
 
 
 @pytest.mark.django_db
-def test_search_result_to_queryset(get_category):
-    category = get_category
-    item = mock.MagicMock(name="Item", pk=category.pk)
+def test_search_result_to_queryset(category_obj):
+    item = mock.MagicMock(name="Item", pk=category_obj.pk)
 
     assertQuerysetEqual(
         RediSearchResult([item], 10, Category).to_queryset(),
@@ -127,9 +126,8 @@ def test_search_result_to_queryset_no_model_set():
 
 
 @pytest.mark.django_db
-def test_search_query_to_queryset(get_category):
-    category = get_category
-    item = mock.MagicMock(name="Item", pk=category.pk)
+def test_search_query_to_queryset(category_obj):
+    item = mock.MagicMock(name="Item", pk=category_obj.pk)
 
     query = RediSearchQuery(mock.MagicMock(), model=mock.MagicMock())
     query._model_cache = RediSearchResult([item], 10, Category)
