@@ -45,6 +45,9 @@ class Document(RedisModel, ABC):
 
     _query_class = RediSearchQuery
 
+    class Meta:
+        global_key_prefix = "redis_search"
+
     @classmethod
     def find(
         cls, *expressions: Union[Any, Expression], **kwargs: Any
@@ -126,6 +129,10 @@ class Document(RedisModel, ABC):
                         f"method on the '{cls.__name__}' class "
                         f"that returns a value of type {field_type}"
                     )
+
+                if field_name == "pk":
+                    value = str(value)
+
                 data[field_name] = value
         return data
 
@@ -282,9 +289,6 @@ class Document(RedisModel, ABC):
     def id(self) -> Union[int, str]:
         """Alias for the primary key of the document"""
         return self.pk
-
-    class Meta:
-        global_key_prefix = "redis_search"
 
 
 class JsonDocument(Document, JsonModel, ABC):

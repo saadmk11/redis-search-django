@@ -2,6 +2,9 @@
 requires = ["setuptools"]
 build-backend = "setuptools.build_meta"
 
+[tool.pytest.ini_options]
+addopts = "--ds=tests.django_settings"
+
 [tool.mypy]
 mypy_path = "redis_search_django/"
 check_untyped_defs = true
