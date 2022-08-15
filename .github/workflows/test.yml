@@ -23,10 +23,10 @@ jobs:
           - python-version: "3.7"
             django-version: "4.1"
 
-          - python-version: "3.11"
+          - python-version: "3.11-dev"
             django-version: "3.2"
 
-          - python-version: "3.11"
+          - python-version: "3.11-dev"
             django-version: "4.0"
 
     services:
