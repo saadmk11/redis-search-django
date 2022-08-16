@@ -1,7 +1,7 @@
 import pytest
 from django.core.exceptions import ImproperlyConfigured
 
-from redis_search_django.documents import DjangoOptions
+from redis_search_django.documents import DjangoOptions, JsonDocument
 from tests.models import Category, Product, Tag, Vendor
 
 
@@ -75,3 +75,13 @@ def test_django_options_with_empty_required_value():
 
     with pytest.raises(ImproperlyConfigured):
         DjangoOptions(Django)
+
+
+@pytest.mark.django_db
+def test_document_id(document_class, category_obj):
+    CategoryJsonDocument = document_class(JsonDocument, Category, ["name"])
+
+    document = CategoryJsonDocument.from_model_instance(category_obj, save=False)
+
+    assert document.id == str(category_obj.id)
+    assert document.id == document.pk
