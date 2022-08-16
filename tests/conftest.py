@@ -52,6 +52,8 @@ def nested_document_class(document_class):
         class Django:
             model = Product
             fields = ["name", "description", "price", "created_at"]
+            select_related_fields = ["vendor", "category"]
+            prefetch_related_fields = ["tags"]
             related_models = {
                 Vendor: {
                     "related_name": "product",

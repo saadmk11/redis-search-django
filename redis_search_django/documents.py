@@ -2,9 +2,10 @@ import operator
 from abc import ABC
 from dataclasses import dataclass
 from functools import reduce
-from typing import Any, Dict, List, Union
+from typing import Any, Dict, List, Type, Union
 
 import redis_om
+from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from pydantic.fields import ModelField
 from redis.commands.search.aggregation import AggregateRequest
@@ -24,19 +25,25 @@ class DjangoOptions:
     fields: List[str]
     select_related_fields: List[str]
     prefetch_related_fields: List[str]
-    related_models: List[Dict[str, Union[models.Model, str, bool]]]
+    related_models: Dict[Type[models.Model], Dict[str, Union[str, bool]]]
     auto_index: bool = True
 
     def __init__(self, options: Any = None) -> None:
         self.model = getattr(options, "model", None)
 
         if not self.model:
-            raise ValueError("Django options requires field model.")
+            raise ImproperlyConfigured("Django options requires field `model`.")
 
-        self.fields = getattr(options, "fields", [])
-        self.select_related_fields = getattr(options, "select_related_fields", [])
-        self.prefetch_related_fields = getattr(options, "prefetch_related_fields", [])
-        self.related_models = getattr(options, "related_models", [])
+        # If the attributes do not exist or explicitly set to None,
+        # use the default value
+        self.fields = getattr(options, "fields", None) or []
+        self.select_related_fields = (
+            getattr(options, "select_related_fields", None) or []
+        )
+        self.prefetch_related_fields = (
+            getattr(options, "prefetch_related_fields", None) or []
+        )
+        self.related_models = getattr(options, "related_models", None) or {}
         self.auto_index = getattr(options, "auto_index", True)
 
 
@@ -82,7 +89,7 @@ class Document(RedisModel, ABC):
 
     @classmethod
     def data_from_model_instance(
-        cls, instance: models.Model, exclude_related: Union[models.Model, None] = None
+        cls, instance: models.Model, exclude_obj: Union[models.Model, None] = None
     ) -> Dict[str, Any]:
         """Build a document data dictionary from a Django Model instance"""
         data = {}
@@ -102,18 +109,16 @@ class Document(RedisModel, ABC):
                 and callable(target.all)
             ):
                 data[field_name] = [
-                    field_type.data_from_model_instance(
-                        obj, exclude_related=exclude_related
-                    )
+                    field_type.data_from_model_instance(obj, exclude_obj=exclude_obj)
                     for obj in target.all()
-                    if obj != exclude_related
+                    if obj != exclude_obj
                 ]
             # If the target field is a ForeignKey or OneToOneField,
             # get the related object to build data
             elif is_embedded and target:
-                if target != exclude_related:
+                if target != exclude_obj:
                     data[field_name] = field_type.data_from_model_instance(
-                        target, exclude_related=exclude_related
+                        target, exclude_obj=exclude_obj
                     )
             else:
                 # Check if the Document class has a `prepare_{field_name}` class method
@@ -145,14 +150,14 @@ class Document(RedisModel, ABC):
     def from_model_instance(
         cls,
         instance: models.Model,
-        exclude_related: Union[models.Model, None] = None,
+        exclude_obj: Union[models.Model, None] = None,
         save: bool = True,
     ) -> RedisModel:
         """Build a document from a Django Model instance"""
         assert instance._meta.model == cls._django.model
 
         obj = cls.from_data(
-            cls.data_from_model_instance(instance, exclude_related=exclude_related)
+            cls.data_from_model_instance(instance, exclude_obj=exclude_obj)
         )
 
         if save:
@@ -179,21 +184,23 @@ class Document(RedisModel, ABC):
     def update_from_related_model_instance(
         cls, instance: models.Model, exclude: models.Model = None
     ) -> None:
-        """Delete related model data from the document"""
+        """Update a document from a Django Related Model instance"""
         related_model = instance.__class__
         related_model_data = cls._django.related_models.get(related_model)
-        related_name = related_model_data["related_name"]
 
-        if not related_model:
+        # If the related model is not configured, return
+        if not related_model_data:
             return
 
+        related_name = related_model_data["related_name"]
         attribute = getattr(instance, related_name, None)
 
+        # If the related name attribute is not found, return
         if not attribute:
             return
 
         if related_model_data["many"]:
-            cls.index_queryset(attribute.all(), exclude_related=exclude)
+            cls.index_queryset(attribute.all(), exclude_obj=exclude)
         else:
             # If the related model instance will delete
             # the document's Django model instance
@@ -204,22 +211,20 @@ class Document(RedisModel, ABC):
                 == models.CASCADE
             ):
                 exclude = None
-            cls.from_model_instance(attribute, exclude_related=exclude, save=True)
+            cls.from_model_instance(attribute, exclude_obj=exclude, save=True)
 
     @classmethod
     def index_queryset(
         cls,
         queryset: models.QuerySet,
-        exclude_related: Union[models.Model, None] = None,
+        exclude_obj: Union[models.Model, None] = None,
     ) -> None:
         """Index all items in the Django model queryset"""
         obj_list = []
 
         for instance in queryset.iterator():
             obj_list.append(
-                cls.from_model_instance(
-                    instance, exclude_related=exclude_related, save=False
-                )
+                cls.from_model_instance(instance, exclude_obj=exclude_obj, save=False)
             )
 
         cls.add(obj_list)

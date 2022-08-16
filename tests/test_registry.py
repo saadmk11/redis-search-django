@@ -3,7 +3,11 @@ from collections import defaultdict
 from typing import List, Optional
 from unittest import mock
 
-from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
+from redis_search_django.documents import (
+    EmbeddedJsonDocument,
+    HashDocument,
+    JsonDocument,
+)
 from redis_search_django.registry import DocumentRegistry
 from tests.models import Category, Product, Tag, Vendor
 
@@ -16,10 +20,15 @@ def test_empty_registry():
 
 def test_register(document_class):
     registry = DocumentRegistry()
-    DocumentClass = document_class(JsonDocument, Vendor, ["name"])
-    registry.register(DocumentClass)
+    VendorDocumentClass = document_class(JsonDocument, Vendor, ["name"])
+    CategoryDocumentClass = document_class(HashDocument, Category, ["name"])
+    registry.register(VendorDocumentClass)
+    registry.register(CategoryDocumentClass)
 
-    assert registry.django_model_map == {Vendor: {DocumentClass}}
+    assert registry.django_model_map == {
+        Vendor: {VendorDocumentClass},
+        Category: {CategoryDocumentClass},
+    }
     assert registry.related_django_model_map == defaultdict(set)
 
 

@@ -136,6 +136,7 @@ class RediSearchQuery(FindQuery):
     def execute(self, exhaust_results: bool = True) -> RediSearchResult:
         """Executes the search query and returns a RediSearchResult"""
         args = ["ft.search", self.model.Meta.index_name, self.query, *self.pagination]
+
         if self.sort_fields:
             args += self.resolve_redisearch_sort_fields()
 

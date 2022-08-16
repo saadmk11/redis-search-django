@@ -135,6 +135,16 @@ def test_search_query_to_queryset(category_obj):
     assertQuerysetEqual(query.to_queryset(), Category.objects.all())
 
 
+@mock.patch("redis_search_django.query.RediSearchQuery.execute")
+@pytest.mark.django_db
+def test_search_query_to_queryset_without_result(execute, category_obj):
+    query = RediSearchQuery(mock.MagicMock(), model=mock.MagicMock())
+
+    query.to_queryset()
+
+    execute().to_queryset.assert_called_once()
+
+
 @pytest.mark.django_db
 def test_search_query_all():
     query = RediSearchQuery(mock.MagicMock(), model=mock.MagicMock())
@@ -182,4 +192,32 @@ def test_search_query_execute():
 
     assert isinstance(result, RediSearchResult)
     assert len(result) == 1
+    assert result.hit_count == 1
+
+
+def test_search_query_execute_without_offset():
+    model = mock.MagicMock()
+    model.db().execute_command.return_value = [1, [mock.MagicMock()]]
+    model.from_redis.return_value = [mock.MagicMock()]
+    query = RediSearchQuery([], model=model, offset=0)
+    query._model_cache = RediSearchResult([mock.MagicMock()], 10, None)
+
+    result = query.execute()
+
+    assert isinstance(result, RediSearchResult)
+    assert len(result) == 1
+    assert result.hit_count == 1
+
+
+def test_search_query_execute_with_offset():
+    model = mock.MagicMock()
+    model.db().execute_command.return_value = [1, [mock.MagicMock()]]
+    model.from_redis.return_value = [mock.MagicMock()]
+    query = RediSearchQuery([], model=model, offset=10)
+    query._model_cache = RediSearchResult([mock.MagicMock()], 10, None)
+
+    result = query.execute()
+
+    assert isinstance(result, RediSearchResult)
+    assert len(result) == 2
     assert result.hit_count == 1
