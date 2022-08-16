@@ -262,7 +262,12 @@ class Document(RedisModel, ABC):
             field_config = model_field_class_config.get(field_type.__class__)
 
             if not field_config:
-                raise TypeError(f"Unknown field type: {field_type}")
+                raise ImproperlyConfigured(
+                    f"Either the field '{field_type}' is not a Django model field or "
+                    "is a Related Model Field (OneToOneField, ForeignKey, ManyToMany) "
+                    f"which needs to be explicitly added to the '{cls.__name__}' "
+                    f"document class using 'EmbeddedJsonDocument'"
+                )
 
             field_config = field_config.copy()
             annotation = field_config.pop("type")
