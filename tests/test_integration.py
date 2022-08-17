@@ -5,7 +5,6 @@ from redis.commands.search import reducers
 from redis_om import Migrator, NotFoundError
 
 from redis_search_django.documents import JsonDocument
-from redis_search_django.registry import DocumentRegistry
 
 from .models import Category, Product, Tag, Vendor
 from .utils import is_redis_running
@@ -15,8 +14,6 @@ from .utils import is_redis_running
 @pytest.mark.django_db
 def test_object_create(document_class):
     DocumentClass = document_class(JsonDocument, Category, ["name"])
-    registry = DocumentRegistry()
-    registry.register(DocumentClass)
 
     category = Category.objects.create(name="test")
     document_obj = DocumentClass.get(pk=category.pk)
@@ -29,8 +26,6 @@ def test_object_create(document_class):
 @pytest.mark.django_db
 def test_object_update(document_class):
     DocumentClass = document_class(JsonDocument, Category, ["name"])
-    registry = DocumentRegistry()
-    registry.register(DocumentClass)
 
     category = Category.objects.create(name="test")
     document_obj = DocumentClass.get(pk=category.pk)
@@ -49,8 +44,6 @@ def test_object_update(document_class):
 @pytest.mark.django_db
 def test_object_delete(document_class):
     DocumentClass = document_class(JsonDocument, Category, ["name"])
-    registry = DocumentRegistry()
-    registry.register(DocumentClass)
 
     category = Category.objects.create(name="test")
     document_obj = DocumentClass.get(pk=category.pk)
@@ -67,12 +60,6 @@ def test_object_delete(document_class):
 @pytest.mark.django_db
 def test_related_object_add(nested_document_class):
     ProductDocumentCalss = nested_document_class[0]
-    registry = DocumentRegistry()
-    registry.register(ProductDocumentCalss)
-
-    for document_class in nested_document_class[1]:
-        registry.register(document_class)
-
     vendor = Vendor.objects.create(
         name="test", establishment_date=datetime.date.today()
     )
@@ -115,12 +102,6 @@ def test_related_object_add(nested_document_class):
 @pytest.mark.django_db
 def test_related_object_update(nested_document_class):
     ProductDocumentCalss = nested_document_class[0]
-    registry = DocumentRegistry()
-    registry.register(ProductDocumentCalss)
-
-    for document_class in nested_document_class[1]:
-        registry.register(document_class)
-
     vendor = Vendor.objects.create(
         name="test", establishment_date=datetime.date.today()
     )
@@ -180,12 +161,6 @@ def test_related_object_update(nested_document_class):
 @pytest.mark.django_db
 def test_related_object_delete(nested_document_class):
     ProductDocumentCalss = nested_document_class[0]
-    registry = DocumentRegistry()
-    registry.register(ProductDocumentCalss)
-
-    for document_class in nested_document_class[1]:
-        registry.register(document_class)
-
     vendor = Vendor.objects.create(
         name="test", establishment_date=datetime.date.today()
     )
@@ -241,8 +216,6 @@ def test_related_object_delete(nested_document_class):
 @pytest.mark.django_db
 def test_aggregate(document_class):
     CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
-    registry = DocumentRegistry()
-    registry.register(CategoryDocumentClass)
 
     Migrator().run()
 
@@ -266,8 +239,6 @@ def test_aggregate(document_class):
 @pytest.mark.django_db
 def test_find(document_class):
     CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
-    registry = DocumentRegistry()
-    registry.register(CategoryDocumentClass)
 
     Migrator().run()
 

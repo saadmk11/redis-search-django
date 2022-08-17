@@ -1,6 +1,6 @@
 from collections import defaultdict
 from dataclasses import dataclass
-from typing import TYPE_CHECKING, Dict, Set, Type
+from typing import TYPE_CHECKING, Dict, List, Set, Type, Union
 
 from django.db import models
 
@@ -69,6 +69,22 @@ class DocumentRegistry:
 
             # Try to Delete the Document from Redis Index.
             document_class.delete(model_object.pk)
+
+    def index_documents(self, models: Union[List[str], None] = None) -> None:
+        """Index documents."""
+        for (
+            django_model,
+            document_classes,
+        ) in self.django_model_map.items():
+            for document_class in document_classes:
+                if not document_class._django.auto_index:
+                    continue
+
+                if models:
+                    if django_model._meta.label in models:
+                        document_class.index_all()
+                else:
+                    document_class.index_all()
 
 
 document_registry: DocumentRegistry = DocumentRegistry()

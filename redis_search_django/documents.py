@@ -186,20 +186,20 @@ class Document(RedisModel, ABC):
     ) -> None:
         """Update a document from a Django Related Model instance"""
         related_model = instance.__class__
-        related_model_data = cls._django.related_models.get(related_model)
+        related_model_config = cls._django.related_models.get(related_model)
 
         # If the related model is not configured, return
-        if not related_model_data:
+        if not related_model_config:
             return
 
-        related_name = related_model_data["related_name"]
+        related_name = related_model_config["related_name"]
         attribute = getattr(instance, related_name, None)
 
         # If the related name attribute is not found, return
         if not attribute:
             return
 
-        if related_model_data["many"]:
+        if related_model_config["many"]:
             cls.index_queryset(attribute.all(), exclude_obj=exclude)
         else:
             # If the related model instance will delete

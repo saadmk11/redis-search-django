@@ -8,6 +8,7 @@ from redis_search_django.documents import (
     JsonDocument,
 )
 from tests.models import Category, Product, Tag, Vendor
+from tests.utils import is_redis_running
 
 
 def test_django_options():
@@ -82,6 +83,7 @@ def test_django_options_with_empty_required_value():
         DjangoOptions(Django)
 
 
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
 @pytest.mark.django_db
 def test_document_id(document_class, category_obj):
     CategoryJsonDocument = document_class(JsonDocument, Category, ["name"])
