@@ -227,3 +227,46 @@ def test_remove_document_with_auto_index_disabled(delete, document_class):
     registry.remove_document(model_obj1)
 
     delete.assert_not_called()
+
+
+@mock.patch("redis_search_django.documents.Document.index_all")
+def test_index_documents(index_all, document_class):
+    registry = DocumentRegistry()
+    VendorDocumentClass = document_class(JsonDocument, Vendor, ["name"])
+    CategoryDocumentClass = document_class(HashDocument, Category, ["name"])
+    registry.register(VendorDocumentClass)
+    registry.register(CategoryDocumentClass)
+
+    registry.index_documents()
+
+    assert index_all.call_count == 2
+
+
+@mock.patch("redis_search_django.documents.Document.index_all")
+def test_index_documents_with_auto_index_disabled(index_all, document_class):
+    registry = DocumentRegistry()
+    VendorDocumentClass = document_class(
+        JsonDocument, Vendor, ["name"], enable_auto_index=False
+    )
+    CategoryDocumentClass = document_class(
+        HashDocument, Category, ["name"], enable_auto_index=False
+    )
+    registry.register(VendorDocumentClass)
+    registry.register(CategoryDocumentClass)
+
+    registry.index_documents()
+
+    index_all.assert_not_called()
+
+
+@mock.patch("redis_search_django.documents.Document.index_all")
+def test_index_documents_with_specific_model(index_all, document_class):
+    registry = DocumentRegistry()
+    VendorDocumentClass = document_class(JsonDocument, Vendor, ["name"])
+    CategoryDocumentClass = document_class(HashDocument, Category, ["name"])
+    registry.register(VendorDocumentClass)
+    registry.register(CategoryDocumentClass)
+
+    registry.index_documents(["tests.Category"])
+
+    index_all.assert_called_once()

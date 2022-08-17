@@ -71,7 +71,7 @@ class DocumentRegistry:
             document_class.delete(model_object.pk)
 
     def index_documents(self, models: Union[List[str], None] = None) -> None:
-        """Index documents."""
+        """Index documents for all or specific registered Django models."""
         for (
             django_model,
             document_classes,
