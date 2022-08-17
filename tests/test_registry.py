@@ -128,6 +128,21 @@ def test_update_document_with_auto_index_disabled(
     update_from_model_instance.assert_not_called()
 
 
+@mock.patch("redis_search_django.documents.JsonDocument.update_from_model_instance")
+def test_update_document_with_global_auto_index_disabled(
+    update_from_model_instance, settings, document_class
+):
+    settings.REDIS_SEARCH_AUTO_INDEX = False
+
+    CategoryJsonDocument = document_class(JsonDocument, Category, ["name"])
+    registry = DocumentRegistry()
+    registry.register(CategoryJsonDocument)
+    model_obj1 = Category(name="test")
+
+    registry.update_document(model_obj1)
+    update_from_model_instance.assert_not_called()
+
+
 @mock.patch(
     "redis_search_django.documents.JsonDocument.update_from_related_model_instance"
 )
@@ -198,6 +213,41 @@ def test_update_related_documents_with_auto_index_disabled(
     update_from_related_model_instance.assert_not_called()
 
 
+@mock.patch(
+    "redis_search_django.documents.JsonDocument.update_from_related_model_instance"
+)
+def test_update_related_documents_with_global_auto_index_disabled(
+    update_from_related_model_instance, settings, document_class
+):
+    settings.REDIS_SEARCH_AUTO_INDEX = False
+    CategoryEmbeddedJsonDocument = document_class(
+        EmbeddedJsonDocument, Category, ["name"]
+    )
+
+    class ProductJsonDocument(JsonDocument):
+        category: Optional[CategoryEmbeddedJsonDocument]
+
+        class Django:
+            model = Product
+            fields = ["name", "description", "price", "created_at"]
+            related_models = {
+                Category: {
+                    "related_name": "product_set",
+                    "many": True,
+                },
+            }
+            auto_index = True
+
+    registry = DocumentRegistry()
+    registry.register(ProductJsonDocument)
+
+    model_obj1 = Category(name="test")
+
+    registry.update_related_documents(model_obj1)
+
+    update_from_related_model_instance.assert_not_called()
+
+
 @mock.patch("redis_search_django.documents.JsonDocument.delete")
 def test_remove_document(delete, document_class):
     CategoryJsonDocument = document_class(JsonDocument, Category, ["name"])
@@ -219,6 +269,23 @@ def test_remove_document_with_auto_index_disabled(delete, document_class):
     CategoryJsonDocument = document_class(
         JsonDocument, Category, ["name"], enable_auto_index=False
     )
+    registry = DocumentRegistry()
+    registry.register(CategoryJsonDocument)
+
+    model_obj1 = Category(name="test")
+
+    registry.remove_document(model_obj1)
+
+    delete.assert_not_called()
+
+
+@mock.patch("redis_search_django.documents.JsonDocument.delete")
+def test_remove_document_with_global_auto_index_disabled(
+    delete, settings, document_class
+):
+    settings.REDIS_SEARCH_AUTO_INDEX = False
+
+    CategoryJsonDocument = document_class(JsonDocument, Category, ["name"])
     registry = DocumentRegistry()
     registry.register(CategoryJsonDocument)
 
@@ -270,3 +337,19 @@ def test_index_documents_with_specific_model(index_all, document_class):
     registry.index_documents(["tests.Category"])
 
     index_all.assert_called_once()
+
+
+@mock.patch("redis_search_django.documents.Document.index_all")
+def test_index_documents_with_global_auto_index_disabled(
+    index_all, settings, document_class
+):
+    settings.REDIS_SEARCH_AUTO_INDEX = False
+    registry = DocumentRegistry()
+    VendorDocumentClass = document_class(JsonDocument, Vendor, ["name"])
+    CategoryDocumentClass = document_class(HashDocument, Category, ["name"])
+    registry.register(VendorDocumentClass)
+    registry.register(CategoryDocumentClass)
+
+    registry.index_documents()
+
+    index_all.assert_not_called()
