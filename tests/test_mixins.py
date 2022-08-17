@@ -2,17 +2,22 @@ from unittest import mock
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
+from django.test import RequestFactory
 from django.utils.functional import cached_property
 from django.views import View
+from django.views.generic import ListView
 
 from redis_search_django.documents import JsonDocument
 from redis_search_django.mixins import (
+    ListViewMixin,
     RediSearchMixin,
     RediSearchMultipleObjectMixin,
     RediSearchTemplateResponseMixin,
 )
+from redis_search_django.paginator import RediSearchPaginator
 from redis_search_django.query import RediSearchQuery
 from tests.models import Category
+from tests.utils import is_redis_running
 
 
 def test_redis_search_mixin(document_class):
@@ -127,3 +132,21 @@ def test_redis_search_multiple_object_mixin_without_document_class(document_clas
     view = SearchView()
 
     assert view.get_context_object_name([]) is None
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@mock.patch("redis_search_django.documents.JsonDocument.find")
+def test_list_view_mixin(find, document_class):
+    DocumentClass = document_class(JsonDocument, Category, ["name"])
+
+    class SearchView(ListViewMixin, ListView):
+        paginate_by = 20
+        model = Category
+        template_name = "core/search.html"
+        document_class = DocumentClass
+
+    request = RequestFactory().get("/some_url")
+    response = SearchView.as_view()(request)
+
+    find.assert_called_once()
+    assert isinstance(response.context_data["paginator"], RediSearchPaginator)

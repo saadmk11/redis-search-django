@@ -195,6 +195,19 @@ def test_search_query_execute():
     assert result.hit_count == 1
 
 
+def test_search_query_execute_with_exhaust_results():
+    model = mock.MagicMock()
+    model.db().execute_command.return_value = [2, [mock.MagicMock()]]
+    model.from_redis.side_effect = [[mock.MagicMock()], [mock.MagicMock()], []]
+    query = RediSearchQuery([], model=model)
+
+    result = query.execute(exhaust_results=True)
+
+    assert isinstance(result, RediSearchResult)
+    assert len(result) == 2
+    assert result.hit_count == 2
+
+
 def test_search_query_execute_without_offset():
     model = mock.MagicMock()
     model.db().execute_command.return_value = [1, [mock.MagicMock()]]

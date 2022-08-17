@@ -1,4 +1,5 @@
 import datetime
+import uuid
 from typing import List, Optional
 
 import pytest
@@ -10,11 +11,16 @@ from tests.models import Category, Product, Tag, Vendor
 @pytest.fixture
 def document_class():
     def build_document_class(
-        document_type, model_class, model_fields, enable_auto_index=True
+        document_type,
+        model_class,
+        model_fields,
+        enable_auto_index=True,
     ):
         class DocumentClass(document_type):
             class Meta:
-                model_key_prefix = model_class.__name__.lower()
+                model_key_prefix = (
+                    f"{model_class.__name__.lower()}-{uuid.uuid4().hex[:5]}"
+                )
                 global_key_prefix = "test_redis_search"
 
             class Django:
@@ -38,7 +44,7 @@ def nested_document_class(document_class):
     )
 
     class ProductJsonDocument(JsonDocument):
-        # OnetoOneField
+        # OnetoOneField with null=True
         vendor: VendorEmbeddedJsonDocument
         # ForeignKey field
         category: Optional[CategoryEmbeddedJsonDocument]
@@ -46,7 +52,7 @@ def nested_document_class(document_class):
         tags: List[TagEmbeddedJsonDocument]
 
         class Meta:
-            model_key_prefix = Product.__name__.lower()
+            model_key_prefix = f"{Product.__name__.lower()}-{uuid.uuid4().hex[:5]}"
             global_key_prefix = "test_redis_search"
 
         class Django:
