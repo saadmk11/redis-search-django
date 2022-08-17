@@ -2,6 +2,7 @@ from collections import defaultdict
 from dataclasses import dataclass
 from typing import TYPE_CHECKING, Dict, List, Set, Type, Union
 
+from django.conf import settings
 from django.db import models
 
 if TYPE_CHECKING:
@@ -29,6 +30,9 @@ class DocumentRegistry:
 
     def update_document(self, model_object: models.Model, create: bool = True) -> None:
         """Update document of specific model."""
+        if not getattr(settings, "REDIS_SEARCH_AUTO_INDEX", True):
+            return
+
         document_classes = self.django_model_map.get(model_object.__class__, set())
 
         for document_class in document_classes:
@@ -45,6 +49,9 @@ class DocumentRegistry:
         exclude: models.Model = None,
     ) -> None:
         """Update related documents of a specific model."""
+        if not getattr(settings, "REDIS_SEARCH_AUTO_INDEX", True):
+            return
+
         document_classes = self.related_django_model_map.get(
             model_object.__class__, set()
         )
@@ -60,6 +67,9 @@ class DocumentRegistry:
 
     def remove_document(self, model_object: models.Model) -> None:
         """Remove document of a specific model."""
+        if not getattr(settings, "REDIS_SEARCH_AUTO_INDEX", True):
+            return
+
         document_classes = self.django_model_map.get(model_object.__class__, set())
 
         for document_class in document_classes:
@@ -72,6 +82,9 @@ class DocumentRegistry:
 
     def index_documents(self, models: Union[List[str], None] = None) -> None:
         """Index documents for all or specific registered Django models."""
+        if not getattr(settings, "REDIS_SEARCH_AUTO_INDEX", True):
+            return
+
         for (
             django_model,
             document_classes,
