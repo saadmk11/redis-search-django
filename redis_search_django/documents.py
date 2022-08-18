@@ -4,13 +4,17 @@ from dataclasses import dataclass
 from functools import reduce
 from typing import Any, Dict, List, Type, Union
 
-import redis_om
 from django.core.exceptions import ImproperlyConfigured
 from django.db import models
 from pydantic.fields import ModelField
 from redis.commands.search.aggregation import AggregateRequest
 from redis_om import Field, HashModel, JsonModel
-from redis_om.model.model import EmbeddedJsonModel, Expression, RedisModel
+from redis_om.model.model import (
+    EmbeddedJsonModel,
+    Expression,
+    NotFoundError,
+    RedisModel,
+)
 
 from .config import model_field_class_config
 from .query import RediSearchQuery
@@ -173,7 +177,7 @@ class Document(RedisModel, ABC):
         try:
             obj = cls.get(instance.pk)
             obj.update(**cls.data_from_model_instance(instance))
-        except redis_om.model.model.NotFoundError:
+        except NotFoundError:
             if not create:
                 raise
             # Create the Document if not found.

@@ -1,8 +1,10 @@
 import datetime
+from unittest import mock
 
 import pytest
 from django.core.exceptions import ImproperlyConfigured
-from redis_om import NotFoundError
+from redis.commands.search import reducers
+from redis_om import Migrator, NotFoundError
 
 from redis_search_django.documents import (
     DjangoOptions,
@@ -253,3 +255,251 @@ def test_from_model_instance(document_class, category_obj):
     CategoryDocumentClass.from_model_instance(category_obj)
 
     assert CategoryDocumentClass.get(pk=category_obj.pk) is not None
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_update_from_related_model_instance(nested_document_class, product_with_tag):
+    ProductDocumentCalss = nested_document_class[0]
+    product = Product.objects.create(
+        name="Test",
+        price=10.0,
+        vendor=Vendor.objects.create(
+            name="test", establishment_date=datetime.date.today()
+        ),
+    )
+
+    tag = Tag.objects.create(name="test")
+    product.tags.add(tag)
+
+    with mock.patch(
+        "redis_search_django.registry.DocumentRegistry.update_related_documents"
+    ):
+        tag.name = "test2"
+        tag.save()
+
+    assert ProductDocumentCalss.get(pk=product.pk).tags[0].name == "test"
+
+    ProductDocumentCalss.update_from_related_model_instance(tag)
+
+    assert ProductDocumentCalss.get(pk=product.pk).tags[0].name == "test2"
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_update_from_related_model_instance_one_to_one(
+    nested_document_class, product_with_tag
+):
+    ProductDocumentCalss = nested_document_class[0]
+    vendor = Vendor.objects.create(
+        name="test", establishment_date=datetime.date.today()
+    )
+    product = Product.objects.create(name="Test", price=10.0, vendor=vendor)
+
+    with mock.patch(
+        "redis_search_django.registry.DocumentRegistry.update_related_documents"
+    ):
+        vendor.name = "test2"
+        vendor.save()
+
+    assert ProductDocumentCalss.get(pk=product.pk).vendor.name == "test"
+
+    ProductDocumentCalss.update_from_related_model_instance(vendor)
+
+    assert ProductDocumentCalss.get(pk=product.pk).vendor.name == "test2"
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_update_from_related_model_instance_exclude_required_field(
+    nested_document_class, product_with_tag
+):
+    ProductDocumentCalss = nested_document_class[0]
+    vendor = Vendor.objects.create(
+        name="test", establishment_date=datetime.date.today()
+    )
+    product = Product.objects.create(name="Test", price=10.0, vendor=vendor)
+
+    assert ProductDocumentCalss.get(pk=product.pk).vendor.name == "test"
+
+    ProductDocumentCalss.update_from_related_model_instance(vendor, exclude=vendor)
+
+    assert ProductDocumentCalss.get(pk=product.pk).vendor.name == "test"
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_update_from_related_model_instance_with_no_related_model_config(
+    document_class, product_with_tag
+):
+    ProductDocumentCalss = document_class(JsonDocument, Product, ["name"])
+    product = Product.objects.create(
+        name="Test",
+        price=10.0,
+        vendor=Vendor.objects.create(
+            name="test", establishment_date=datetime.date.today()
+        ),
+    )
+
+    tag = Tag.objects.create(name="test")
+    product.tags.add(tag)
+
+    with mock.patch(
+        "redis_search_django.registry.DocumentRegistry.update_related_documents"
+    ):
+        tag.name = "test2"
+        tag.save()
+
+    assert not hasattr(ProductDocumentCalss.get(pk=product.pk), "tags")
+
+    ProductDocumentCalss.update_from_related_model_instance(tag)
+
+    assert not hasattr(ProductDocumentCalss.get(pk=product.pk), "tags")
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_update_from_related_model_instance_with_exclude_optional_field(
+    nested_document_class, product_with_tag
+):
+    ProductDocumentCalss = nested_document_class[0]
+    product = Product.objects.create(
+        name="Test",
+        price=10.0,
+        vendor=Vendor.objects.create(
+            name="test", establishment_date=datetime.date.today()
+        ),
+    )
+
+    tag = Tag.objects.create(name="test")
+    product.tags.add(tag)
+
+    assert ProductDocumentCalss.get(pk=product.pk).tags[0].name == "test"
+
+    ProductDocumentCalss.update_from_related_model_instance(tag, exclude=tag)
+
+    assert ProductDocumentCalss.get(pk=product.pk).tags == []
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_data_from_model_instance(nested_document_class, product_with_tag):
+    ProductDocumentCalss = nested_document_class[0]
+    vendor = Vendor.objects.create(name="test", establishment_date="2022-08-18")
+    category = Category.objects.create(name="test")
+    product = Product.objects.create(
+        name="Test", price=10.0, vendor=vendor, category=category
+    )
+
+    tag = Tag.objects.create(name="test")
+    tag2 = Tag.objects.create(name="test2")
+    product.tags.set([tag, tag2])
+
+    data = ProductDocumentCalss.data_from_model_instance(product)
+
+    assert data == {
+        "pk": str(product.pk),
+        "vendor": {
+            "pk": str(vendor.pk),
+            "name": vendor.name,
+            "establishment_date": vendor.establishment_date,
+        },
+        "category": {"pk": str(category.pk), "name": category.name},
+        "tags": [
+            {"pk": str(tag.pk), "name": tag.name},
+            {"pk": str(tag2.pk), "name": tag2.name},
+        ],
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "created_at": product.created_at,
+    }
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_data_from_model_instance_exclude_obj(nested_document_class, product_with_tag):
+    ProductDocumentCalss = nested_document_class[0]
+    vendor = Vendor.objects.create(name="test", establishment_date="2022-08-18")
+    category = Category.objects.create(name="test")
+    product = Product.objects.create(
+        name="Test", price=10.0, vendor=vendor, category=category
+    )
+
+    tag = Tag.objects.create(name="test")
+    tag2 = Tag.objects.create(name="test2")
+    product.tags.set([tag, tag2])
+
+    data = ProductDocumentCalss.data_from_model_instance(product, category)
+    print(data)
+
+    assert data == {
+        "pk": str(product.pk),
+        "vendor": {
+            "pk": str(vendor.pk),
+            "name": vendor.name,
+            "establishment_date": vendor.establishment_date,
+        },
+        "tags": [
+            {"pk": str(tag.pk), "name": tag.name},
+            {"pk": str(tag2.pk), "name": tag2.name},
+        ],
+        "name": product.name,
+        "description": product.description,
+        "price": product.price,
+        "created_at": product.created_at,
+    }
+
+
+def test_build_aggregate_request_without_expressions(document_class):
+    CategoryDocumentCalss = document_class(JsonDocument, Category, ["name"])
+    request = CategoryDocumentCalss.build_aggregate_request()
+
+    assert request._query == "*"
+
+
+def test_build_aggregate_request_with_expressions(document_class):
+    CategoryDocumentCalss = document_class(JsonDocument, Category, ["name"])
+    request = CategoryDocumentCalss.build_aggregate_request(
+        CategoryDocumentCalss.name == "test"
+    )
+    assert request._query == "@name:{test}"
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_aggregate(document_class):
+    CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
+
+    Migrator().run()
+
+    Category.objects.create(name="test")
+    Category.objects.create(name="test2")
+
+    request = CategoryDocumentClass.build_aggregate_request()
+
+    result = CategoryDocumentClass.aggregate(
+        request.group_by(
+            ["@pk"],
+            reducers.count().alias("count"),
+        )
+    )
+
+    assert len(result) == 2
+    assert result[0]["count"] == "1"
+
+
+@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
+@pytest.mark.django_db
+def test_find(document_class):
+    CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
+
+    Migrator().run()
+
+    category_1 = Category.objects.create(name="shoes")
+    Category.objects.create(name="toys")
+
+    result = CategoryDocumentClass.find(CategoryDocumentClass.name % "shoes").execute()
+
+    assert len(result) == 1
+    assert result[0].pk == str(category_1.pk)

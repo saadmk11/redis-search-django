@@ -104,6 +104,6 @@ def category_obj():
 
 
 @pytest.fixture
-def get_product_with_tag(product_obj, tag_obj):
+def product_with_tag(product_obj, tag_obj):
     product_obj.tags.add(tag_obj)
     return product_obj, tag_obj

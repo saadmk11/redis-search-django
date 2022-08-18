@@ -1,8 +1,7 @@
 import datetime
 
 import pytest
-from redis.commands.search import reducers
-from redis_om import Migrator, NotFoundError
+from redis_om import NotFoundError
 
 from redis_search_django.documents import JsonDocument
 
@@ -210,42 +209,3 @@ def test_related_object_delete(nested_document_class):
 
     with pytest.raises(NotFoundError):
         ProductDocumentCalss.get(pk=product.pk)
-
-
-@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
-@pytest.mark.django_db
-def test_aggregate(document_class):
-    CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
-
-    Migrator().run()
-
-    Category.objects.create(name="test")
-    Category.objects.create(name="test2")
-
-    request = CategoryDocumentClass.build_aggregate_request()
-
-    result = CategoryDocumentClass.aggregate(
-        request.group_by(
-            ["@pk"],
-            reducers.count().alias("count"),
-        )
-    )
-
-    assert len(result) == 2
-    assert result[0]["count"] == "1"
-
-
-@pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")
-@pytest.mark.django_db
-def test_find(document_class):
-    CategoryDocumentClass = document_class(JsonDocument, Category, ["name"])
-
-    Migrator().run()
-
-    category_1 = Category.objects.create(name="shoes")
-    Category.objects.create(name="toys")
-
-    result = CategoryDocumentClass.find(CategoryDocumentClass.name % "shoes").execute()
-
-    assert len(result) == 1
-    assert result[0].pk == str(category_1.pk)
