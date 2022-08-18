@@ -84,7 +84,7 @@ class RediSearchMultipleObjectMixin(MultipleObjectMixin):
             return None
 
 
-class ListViewMixin(
+class RediSearchListViewMixin(
     RediSearchMixin, RediSearchTemplateResponseMixin, RediSearchMultipleObjectMixin
 ):
     def get(self, request: HttpRequest, *args: Any, **kwargs: Any) -> TemplateResponse:

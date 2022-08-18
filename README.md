@@ -273,7 +273,99 @@ python manage.py index --models app_name.ModelName app_name2.ModelName2
 
 #### Views
 
+You can use the `redis_search_django.mixin.RediSearchListViewMixin` to search a document index.
+`RediSearchPaginator` which helps paginate ReadiSearch results is also included in the mixin.
+
+**Example**
+
+```python
+# views.py
+
+from django.utils.functional import cached_property
+from django.views.generic import ListView
+from redis.commands.search import reducers
+
+from redis_search_django.mixins import RediSearchListViewMixin
+
+from .documents import ProductDocument
+from .models import Product
+
+
+class SearchView(RediSearchListViewMixin, ListView):
+    paginate_by = 20
+    model = Product
+    template_name = "core/search.html"
+    document_class = ProductDocument
+
+    @cached_property
+    def search_query_expression(self):
+        query = self.request.GET.get("query")
+        query_expression = None
+
+        if query:
+            query_expression = (
+                self.document_class.name % query
+                | self.document_class.description % query
+            )
+
+        return query_expression
+
+    @cached_property
+    def sort_by(self):
+        return self.request.GET.get("sort")
+
+    def facets(self):
+        if self.search_query_expression:
+            request = self.document_class.build_aggregate_request(
+                self.search_query_expression
+            )
+        else:
+            request = self.document_class.build_aggregate_request()
+
+        result = self.document_class.aggregate(
+            request.group_by(
+                ["@tags_name"],
+                reducers.count().alias("count"),
+            )
+        )
+        return result
+```
+
 #### Search
+
+This package uses `redis-om` to search for documents.
+
+**Example**
+
+```python
+from .documents import ProductDocument
+
+
+categories = ["category1", "category2"]
+tags = ["tag1", "tag2"]
+
+# Search For Products That Match The Search Query
+query_expression = (
+    ProductDocument.name % "Some search query"
+    | ProductDocument.description % "Some search query"
+)
+
+# Search For Products That Match The Price Range
+query_expression = (
+    ProductDocument.price >= float(10) & ProductDocument.price <= float(100)
+)
+
+# Search For Products That includes Following Categories
+query_expression = ProductDocument.category.name << ["category1", "category2"]
+
+# Search For Products That includes Following Tags
+query_expression = ProductDocument.tags.name << ["tag1", "tag2"]
+
+# Query expression can be passed on the `find` method
+result = ProductDocument.find(query_expression).sort_by("-price").execute()
+```
+
+For more details checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/getting_started.md)
 
 #### Settings
 
@@ -312,22 +404,25 @@ class ProductDocument(JsonDocument):
         }
 ```
 
-- `model` (Required): Django Model class to index.
-- `auto_index` (Default: `True`, Optional): If True, the model will be indexed on create/update/delete.
-- `fields` (Default: `[]`, Optional): List of model fields to index. (Do not add `OneToOneField`, `ForeignKey` or `ManyToManyField` here. These need to be explicitly added to the Document class using `EmbeddedJsonDocument`.)
-- `select_related_fields` (Default: `[]`, Optional): List of fields to use on `queryset.select_related()`.
-- `prefetch_related_fields` (Default: `[]`, Optional): List of fields to use on `queryset.prefetch_related()`.
-- `related_models` (Default: `{}`, Optional): Dictionary of related models.
+- **`model`** (Required): Django Model class to index.
+- **`auto_index`** (Default: `True`, Optional): If True, the model will be indexed on create/update/delete.
+- **`fields`** (Default: `[]`, Optional): List of model fields to index. (Do not add `OneToOneField`, `ForeignKey` or `ManyToManyField` here. These need to be explicitly added to the Document class using `EmbeddedJsonDocument`.)
+- **`select_related_fields`** (Default: `[]`, Optional): List of fields to use on `queryset.select_related()`.
+- **`prefetch_related_fields`** (Default: `[]`, Optional): List of fields to use on `queryset.prefetch_related()`.
+- **`related_models`** (Default: `{}`, Optional): Dictionary of related models.
   you need to specify the fields **related_name** and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
   These are used to update the document data if any of the related model instance is updated.
-- `related_models` will be used when a related object is saved that contributes to the document.
+  `related_models` will be used when a related object is saved that contributes to the document.
+
+For `redis-om` specific options checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/models.md)
 
 **Global Options**
 
 You can add these options to `settings.py`:
 
-- `REDIS_SEARCH_AUTO_INDEX` (Default: `True`): Enable or Disable Auto Index when model instance is created/updated/deleted for all document classes.
-- `REDIS_OM_URL` (Default: `redis://localhost:6379`): Redis Server URL.
+- **`REDIS_SEARCH_AUTO_INDEX`** (Default: `True`): Enable or Disable Auto Index when model instance is created/updated/deleted for all document classes.
+- **`REDIS_OM_URL`** (Default: `redis://localhost:6379`): Redis Server URL.
+
 
 # License
 

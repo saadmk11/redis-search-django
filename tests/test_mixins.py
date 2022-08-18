@@ -9,7 +9,7 @@ from django.views.generic import ListView
 
 from redis_search_django.documents import JsonDocument
 from redis_search_django.mixins import (
-    ListViewMixin,
+    RediSearchListViewMixin,
     RediSearchMixin,
     RediSearchMultipleObjectMixin,
     RediSearchTemplateResponseMixin,
@@ -139,7 +139,7 @@ def test_redis_search_multiple_object_mixin_without_document_class(document_clas
 def test_list_view_mixin(find, document_class):
     DocumentClass = document_class(JsonDocument, Category, ["name"])
 
-    class SearchView(ListViewMixin, ListView):
+    class SearchView(RediSearchListViewMixin, ListView):
         paginate_by = 20
         model = Category
         template_name = "core/search.html"
