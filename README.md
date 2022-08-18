@@ -12,11 +12,11 @@
 ![Changelog-CI](https://img.shields.io/github/workflow/status/saadmk11/redis-search-django/Changelog%20CI?label=Changelog%20CI&style=flat-square)
 ![Code Style](https://img.shields.io/badge/Code%20Style-Black-black?style=flat-square)
 
-## Description
+# Description
 
 `redis-search-django` is a Django package that provides **indexing** and **searching** capabilities for Django model instances utilizing **RediSearch**.
 
-## Features
+# Features
 
 - Management Command to create, update and populate the RediSearch Index.
 - Auto Sync Index on Model object Create, Update and Delete.
@@ -28,26 +28,26 @@
 - Faceted Searching of Model instances.
 
 
-## Requirements
+# Requirements
 
 - Python: 3.7, 3.8, 3.9, 3.10
 - Django: 3.2, 4.0, 4.1
 - redis-om: >= 0.0.27
 
-## Redis
+# Redis
 
-### Downloading Redis
+## Downloading Redis
 
 The latest version of Redis is available from [Redis.io](https://redis.io/). You can also install Redis with your operating system's package manager.
 
-### RediSearch and RedisJSON
+## RediSearch and RedisJSON
 
 `redis-search-django` relies on the [RediSearch](https://redis.io/docs/stack/search/) and [RedisJSON](https://redis.io/docs/stack/json/) Redis modules to support rich queries and embedded models.
 You need these Redis modules to use `redis-search-django`.
 
 The easiest way to run these Redis modules during local development is to use the [redis-stack](https://hub.docker.com/r/redis/redis-stack) Docker image.
 
-#### Docker Compose
+## Docker Compose
 
 There is a `docker-compose.yaml` file provided in the projects root directory.
 This file will run Redis, RedisJSON and RediSearch during development.
@@ -58,14 +58,14 @@ Run the following command to start the containers:
 docker compose up -d
 ```
 
-## Example Project
+# Example Project
 
 There is an example project available at [Example Project](https://github.com/saadmk11/redis-search-django/tree/main/example).
 
 
-## Documentation
+# Documentation
 
-### Installation
+## Installation
 
 ```bash
 pip install redis-search-django
@@ -80,9 +80,9 @@ INSTALLED_APPS = [
 ]
 ```
 
-### Usage
+## Usage
 
-#### Document Types
+### Document Types
 
 There are 3 types of documents class available:
 
@@ -90,11 +90,11 @@ There are 3 types of documents class available:
 - **EmbeddedJsonDocument:** Embedded Json Documents are used for `OneToOneField`, `ForeignKey` and `ManyToManyField` or any types of nested documents.
 - **HashDocument:** This uses `RedisHash` to store the documents. It can not be used for nested documents.
 
-#### Creating Document Classes
+### Creating Document Classes
 
 You need to inherit from Base Document Classes mentioned above to build a document class.
 
-**Simple Example**
+#### Simple Example
 
 For Django Model:
 
@@ -130,14 +130,15 @@ class CategoryDocument(JsonDocument):
 
 Now category objects will be indexed on create/update/delete.
 
-**More Complex Example**
+#### More Complex Example
 
 For Django Models:
 
-```
+```python
 # models.py
 
 from django.db import models
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=30)
@@ -234,7 +235,7 @@ class ProductDocument(JsonDocument):
         return obj.name.upper()
 ```
 
-**Note:**
+#### Note:
 
 - You can not inherit from `HashDocument` for documents that include nested fields.
 - You need to inherit from `EmbeddedJsonDocument` for nested documents.
@@ -247,7 +248,7 @@ class ProductDocument(JsonDocument):
 - You can override `get_queryset` method to provide more filtering. This will be used while indexing a queryset.
 - Field names must match model field names or define a `prepare_{field_name}` method.
 
-#### Management Command
+### Management Command
 
 You can use the `index` management command to index all the models in the database to redis index if it has a Document class defined.
 
@@ -271,12 +272,12 @@ You can use `--models` to specify which models to index (models must have a Docu
 python manage.py index --models app_name.ModelName app_name2.ModelName2
 ```
 
-#### Views
+### Views
 
 You can use the `redis_search_django.mixin.RediSearchListViewMixin` to search a document index.
 `RediSearchPaginator` which helps paginate ReadiSearch results is also included in the mixin.
 
-**Example**
+#### Example
 
 ```python
 # views.py
@@ -331,11 +332,11 @@ class SearchView(RediSearchListViewMixin, ListView):
         return result
 ```
 
-#### Search
+### Search
 
 This package uses `redis-om` to search for documents.
 
-**Example**
+#### Example
 
 ```python
 from .documents import ProductDocument
@@ -367,11 +368,11 @@ result = ProductDocument.find(query_expression).sort_by("-price").execute()
 
 For more details checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/getting_started.md)
 
-#### Faceted Search / RediSearch Aggregation
+### Faceted Search / RediSearch Aggregation
 
 `redis-om` does not supports faceted search (RediSearch Aggregation). So this package uses `redis-py` to do faceted search.
 
-**Example**
+#### Example
 
 ```python
 from redis.commands.search import reducers
@@ -412,9 +413,9 @@ result2 = ProductDocument.aggregate(
 
 For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable/examples/search_json_examples.html?highlight=aggregate#Aggregation)
 
-#### Settings
+### Settings
 
-**Django Document Options**
+#### Django Document Options
 
 You can add these options on the `Django` class of each Document class:
 
@@ -461,7 +462,7 @@ class ProductDocument(JsonDocument):
 
 For `redis-om` specific options checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/models.md)
 
-**Global Options**
+#### Global Options
 
 You can add these options to `settings.py`:
 
