@@ -1,6 +1,8 @@
 # redis-search-django
 
-[![GitHub release (latest by date)](https://img.shields.io/github/v/release/saadmk11/redis-search-django?style=flat-square)](https://github.com/saadmk11/redis-search-django/releases/latest)
+[![Pypi Version](https://img.shields.io/pypi/v/redis-search-django.svg?style=flat-square)](https://pypi.org/project/redis-search-django/)
+[![Supported Python Versions](https://img.shields.io/pypi/pyversions/redis-search-django?style=flat-square)](https://pypi.org/project/redis-search-django/)
+[![Supported Django Versions](https://img.shields.io/pypi/frameworkversions/django/redis-search-django?color=darkgreen&style=flat-square)](https://pypi.org/project/redis-search-django/)
 [![GitHub stars](https://img.shields.io/github/stars/saadmk11/redis-search-django?color=success&style=flat-square)](https://github.com/saadmk11/redis-search-django/stargazers)
 ![Django Tests](https://img.shields.io/github/workflow/status/saadmk11/redis-search-django/Django%20Tests?label=Test&style=flat-square)
 ![Codecov](https://img.shields.io/codecov/c/github/saadmk11/redis-search-django?style=flat-square&token=ugjHXbEKib)
