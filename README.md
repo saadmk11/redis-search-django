@@ -33,10 +33,33 @@
 - Django: 3.2, 4.0, 4.1
 - redis-om: >= 0.0.27
 
+## Redis Requirements
+
+### Downloading Redis
+
+The latest version of Redis is available from [Redis.io](https://redis.io/). You can also install Redis with your operating system's package manager.
+
+### RediSearch and RedisJSON
+
+`redis-search-django` relies on the [RediSearch](https://redis.io/docs/stack/search/) and [RedisJSON](https://redis.io/docs/stack/json/) Redis modules to support rich queries and embedded models.
+You need these Redis modules to use `redis-search-django`.
+
+The easiest way to run these Redis modules during local development is to use the [redis-stack](https://hub.docker.com/r/redis/redis-stack) Docker image.
+
+#### Docker Compose
+
+There is a `docker-compose.yaml` file provided in the projects root directory.
+This file will run Redis, RedisJSON and RediSearch during development.
+
+Run the following command to start the containers:
+
+```bash
+docker compose up -d
+```
 
 ## Example Project
 
-There is an example project available at `/example`.
+There is an example project available at [Example Project](https://github.com/saadmk11/redis-search-django/tree/main/example).
 
 
 ## Documentation
@@ -75,8 +98,9 @@ You need to inherit from Base Document Classes mentioned above to build a docume
 For Django Model:
 
 ```python
-from django.db import models
+# models.py
 
+from django.db import models
 
 class Category(models.Model):
     name = models.CharField(max_length=30)
@@ -89,6 +113,8 @@ class Category(models.Model):
 You can create a document class like this:
 
 ```python
+# documents.py
+
 from redis_search_django.documents import JsonDocument
 
 from .models import Category
@@ -100,15 +126,16 @@ class CategoryDocument(JsonDocument):
         fields = ["name", "slug"]
 ```
 
-This will index category objects on create/update/delete.
+Now category objects will be indexed on create/update/delete.
 
 **More Complex Example**
 
-For Django Model:
+For Django Models:
 
-```python
+```
+# models.py
+
 from django.db import models
-
 
 class Tag(models.Model):
     name = models.CharField(max_length=30)
@@ -137,9 +164,11 @@ class Product(models.Model):
         return self.name
 ```
 
-You can create a document class like this:
+You can create a document classes like this:
 
 ```python
+# documents.py
+
 from typing import List
 
 from django.db import models
@@ -148,7 +177,6 @@ from redis_om import Field
 from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
 
 from .models import Product, Tag, Vendor
-
 
 class TagDocument(EmbeddedJsonDocument):
     custom_field: str = Field(index=True, full_text_search=True)
@@ -216,3 +244,31 @@ class ProductDocument(JsonDocument):
 - If it is a custom field you must define a `prepare_{field_name}` method that returns the value of the field.
 - You can override `get_queryset` method to provide more filtering. This will be used while indexing a queryset.
 - Field names must match model field names or define a `prepare_{field_name}` method.
+
+#### Management Command
+
+You can use the `index` management command to index all the models in the database to redis index if it has a Document class defined.
+
+**Note:** Make sure that redis is running.
+
+Just run the following command to index all models that have Document classes defined:
+
+```bash
+python manage.py index
+```
+
+You can use `--migrate-only` option to only update the index schema.
+
+```bash
+python manage.py index --migrate-only
+```
+
+You can use `--models` to specify which models to index (models must have a Document class defined).
+
+```bash
+python manage.py index --models app_name.ModelName app_name2.ModelName2
+```
+
+# License
+
+The code in this project is released under the [MIT License](LICENSE).
