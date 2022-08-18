@@ -367,6 +367,51 @@ result = ProductDocument.find(query_expression).sort_by("-price").execute()
 
 For more details checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/getting_started.md)
 
+#### Faceted Search / RediSearch Aggregation
+
+`redis-om` does not supports faceted search (RediSearch Aggregation). So this package uses `redis-py` to do faceted search.
+
+**Example**
+
+```python
+from redis.commands.search import reducers
+
+from .documents import ProductDocument
+
+
+query_expression = (
+    ProductDocument.name % "Some search query"
+    | ProductDocument.description % "Some search query"
+)
+
+# First we need to build the aggregation request
+request1 = ProductDocument.build_aggregate_request(query_expression)
+request2 = ProductDocument.build_aggregate_request(query_expression)
+
+# Get the number of products for each category
+result = ProductDocument.aggregate(
+    request1.group_by(
+        ["@category_name"],
+        reducers.count().alias("count"),
+    )
+)
+
+# >> [{"category_name": "Shoes", "count": "112"}, {"category_name": "Cloths", "count": "200"}]
+
+
+# Get the number of products for each tag
+result2 = ProductDocument.aggregate(
+    request2.group_by(
+        ["@tags_name"],
+        reducers.count().alias("count"),
+    )
+)
+
+# >> [{"tags_name": "Blue", "count": "14"}, {"tags_name": "Small", "count": "57"}]
+```
+
+For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable/examples/search_json_examples.html?highlight=aggregate#Aggregation)
+
 #### Settings
 
 **Django Document Options**
