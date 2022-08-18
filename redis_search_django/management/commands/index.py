@@ -34,9 +34,4 @@ class Command(BaseCommand):
         if only_migrate:
             return
 
-        for django_model, document_class in document_registry.django_model_map.items():
-            if models:
-                if django_model._meta.label in models:
-                    document_class.index_all()
-            else:
-                document_class.index_all()
+        document_registry.index_documents(models)

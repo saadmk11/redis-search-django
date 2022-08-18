@@ -29,7 +29,7 @@ class RediSearchMixin:
         return None
 
     def search(self) -> Document:
-        if not self.document_class:
+        if not hasattr(self, "document_class") or not self.document_class:
             raise ImproperlyConfigured(
                 "%(cls)s requires a 'document_class' attribute"
                 % {"cls": self.__class__.__name__}
@@ -56,7 +56,7 @@ class RediSearchTemplateResponseMixin(MultipleObjectTemplateResponseMixin):
 
         template_names = []
 
-        if self.document_class._django.model:
+        if self.document_class:
             opts = self.document_class._django.model._meta
             template_names.append(
                 "%s/%s%s.html"
@@ -78,7 +78,7 @@ class RediSearchMultipleObjectMixin(MultipleObjectMixin):
         """Get the name of the item to be used in the context."""
         if self.context_object_name:
             return self.context_object_name
-        elif self.document_class._django.model:
+        elif self.document_class:
             return "%s_list" % self.document_class._django.model._meta.model_name
         else:
             return None

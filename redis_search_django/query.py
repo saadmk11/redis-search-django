@@ -12,7 +12,7 @@ class RediSearchResult:
         self,
         results: List[RedisModel],
         hit_count: int,
-        django_model: Union[models.Model, None],
+        django_model: Union[Type[models.Model], None],
     ):
         self.results = results
         self.hit_count = hit_count
@@ -38,11 +38,11 @@ class RediSearchResult:
     def __setitem__(self, index: int, value: RedisModel) -> None:
         self.results[index] = value
 
+    def __contains__(self, item: RedisModel) -> bool:
+        return item in self.results
+
     def __bool__(self) -> bool:
         return bool(self.results)
-
-    def __class_getitem__(cls, *args: Any, **kwargs: Any) -> Type["RediSearchResult"]:
-        return cls
 
     def clear(self) -> None:
         """Clears the results"""
@@ -136,6 +136,7 @@ class RediSearchQuery(FindQuery):
     def execute(self, exhaust_results: bool = True) -> RediSearchResult:
         """Executes the search query and returns a RediSearchResult"""
         args = ["ft.search", self.model.Meta.index_name, self.query, *self.pagination]
+
         if self.sort_fields:
             args += self.resolve_redisearch_sort_fields()
 
