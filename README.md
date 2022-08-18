@@ -10,3 +10,209 @@
 ![Changelog-CI](https://img.shields.io/github/workflow/status/saadmk11/redis-search-django/Changelog%20CI?label=Changelog%20CI&style=flat-square)
 ![Code Style](https://img.shields.io/badge/Code%20Style-Black-black?style=flat-square)
 [![License](https://img.shields.io/github/license/saadmk11/redis-search-django?style=flat-square)](https://github.com/saadmk11/redis-search-django/blob/main/LICENSE)
+
+## Description
+
+`redis-search-django` is a Django package that provides **indexing** and **searching** capabilities for Django model instances utilizing **RediSearch**.
+
+## Features
+
+- Management Command to create, update and populate the RediSearch Index.
+- Auto Sync Index on Model object Create, Update and Delete.
+- Auto Sync Index on Related Model object Add, Update, Remove and Delete.
+- Easy to crate Document Classes with Django Form Class like structure.
+- Indexing of models with `OneToOneField`, `ForeignKey` and `ManyToManyField`.
+- Searching of Model instances using `redis-om`.
+- Search Result Pagination.
+- Faceted Searching of Model instances.
+
+
+## Requirements
+
+- Python: 3.7, 3.8, 3.9, 3.10
+- Django: 3.2, 4.0, 4.1
+- redis-om: >= 0.0.27
+
+
+## Example Project
+
+There is an example project available at `/example`.
+
+
+## Documentation
+
+### Installation
+
+```bash
+pip install redis-search-django
+```
+
+Then add `redis_search_django` to your `INSTALLED_APPS`:
+
+```bash
+INSTALLED_APPS = [
+    ...
+    'redis_search_django',
+]
+```
+
+### Usage
+
+#### Document Types
+
+There are 3 types of documents class available:
+
+- **JsonDocument:** This uses `RedisJSON` to store the document. If you want to use Embedded Documents (Required For `OneToOneField`, `ForeignKey` and `ManyToManyField`) then use `JsonDocument`.
+- **EmbeddedJsonDocument:** Embedded Json Documents are used for `OneToOneField`, `ForeignKey` and `ManyToManyField` or any types of nested documents.
+- **HashDocument:** This uses `RedisHash` to store the documents. It can not be used for nested documents.
+
+#### Creating Document Classes
+
+You need to inherit from Base Document Classes mentioned above to build a document class.
+
+**Simple Example**
+
+For Django Model:
+
+```python
+from django.db import models
+
+
+class Category(models.Model):
+    name = models.CharField(max_length=30)
+    slug = models.SlugField(max_length=30)
+
+    def __str__(self) -> str:
+        return self.name
+```
+
+You can create a document class like this:
+
+```python
+from redis_search_django.documents import JsonDocument
+
+from .models import Category
+
+class CategoryDocument(JsonDocument):
+
+    class Django:
+        model = Category
+        fields = ["name", "slug"]
+```
+
+This will index category objects on create/update/delete.
+
+**More Complex Example**
+
+For Django Model:
+
+```python
+from django.db import models
+
+
+class Tag(models.Model):
+    name = models.CharField(max_length=30)
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Vendor(models.Model):
+    name = models.CharField(max_length=30)
+    email = models.EmailField()
+    establishment_date = models.DateField()
+
+    def __str__(self) -> str:
+        return self.name
+
+
+class Product(models.Model):
+    name = models.CharField(max_length=256)
+    description = models.TextField(blank=True)
+    vendor = models.OneToOneField(Vendor, on_delete=models.CASCADE)
+    tags = models.ManyToManyField(Tag, blank=True)
+    price = models.DecimalField(max_digits=6, decimal_places=2)
+
+    def __str__(self) -> str:
+        return self.name
+```
+
+You can create a document class like this:
+
+```python
+from typing import List
+
+from django.db import models
+from redis_om import Field
+
+from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
+
+from .models import Product, Tag, Vendor
+
+
+class TagDocument(EmbeddedJsonDocument):
+    custom_field: str = Field(index=True, full_text_search=True)
+
+    class Django:
+        model = Tag
+        # Model Fields
+        fields = ["name"]
+
+    @classmethod
+    def prepare_custom_field(cls, obj):
+        return "CUSTOM FIELD VALUE"
+
+
+class VendorDocument(EmbeddedJsonDocument):
+
+    class Django:
+        model = Vendor
+        # Model Fields
+        fields = ["name", "establishment_date"]
+
+
+class ProductDocument(JsonDocument):
+    # OnetoOneField, with null=False
+    vendor: VendorDocument
+    # ManyToManyField
+    tags: List[TagDocument]
+
+    class Django:
+        model = Product
+        # Model Fields
+        fields = ["name", "description", "price"]
+        # Related Model Options
+        related_models = {
+            Vendor: {
+                "related_name": "product",
+                "many": False,
+            },
+            Tag: {
+                "related_name": "product_set",
+                "many": True,
+            },
+        }
+
+    @classmethod
+    def get_queryset(cls) -> models.QuerySet:
+        """Override Queryset to filter out available products."""
+        return super().get_queryset().filter(available=True)
+
+    @classmethod
+    def prepare_name(cls, obj):
+        """Use this to update field value."""
+        return obj.name.upper()
+```
+
+**Note:**
+
+- You can not inherit from `HashDocument` for documents that include nested fields.
+- You need to inherit from `EmbeddedJsonDocument` for nested documents.
+- You need to explicitly add `OneToOneField`, `ForeignKey` or `ManyToManyField` with a nested document class if you want to index them.
+  you can not add it in the `Django.fields` option.
+- For `related_models` option, you need to specify the fields related name and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
+- `related_models` will be used when a related object is saved that contributes to the document.
+- You can define `prepare_{field_name}` method to update the value of the field for indexing.
+- If it is a custom field you must define a `prepare_{field_name}` method that returns the value of the field.
+- You can override `get_queryset` method to provide more filtering. This will be used while indexing a queryset.
+- Field names must match model field names or define a `prepare_{field_name}` method.
