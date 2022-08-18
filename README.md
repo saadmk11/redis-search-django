@@ -33,7 +33,7 @@
 - Django: 3.2, 4.0, 4.1
 - redis-om: >= 0.0.27
 
-## Redis Requirements
+## Redis
 
 ### Downloading Redis
 
@@ -102,6 +102,7 @@ For Django Model:
 
 from django.db import models
 
+
 class Category(models.Model):
     name = models.CharField(max_length=30)
     slug = models.SlugField(max_length=30)
@@ -119,8 +120,8 @@ from redis_search_django.documents import JsonDocument
 
 from .models import Category
 
-class CategoryDocument(JsonDocument):
 
+class CategoryDocument(JsonDocument):
     class Django:
         model = Category
         fields = ["name", "slug"]
@@ -178,6 +179,7 @@ from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
 
 from .models import Product, Tag, Vendor
 
+
 class TagDocument(EmbeddedJsonDocument):
     custom_field: str = Field(index=True, full_text_search=True)
 
@@ -192,7 +194,6 @@ class TagDocument(EmbeddedJsonDocument):
 
 
 class VendorDocument(EmbeddedJsonDocument):
-
     class Django:
         model = Vendor
         # Model Fields
@@ -268,6 +269,64 @@ You can use `--models` to specify which models to index (models must have a Docu
 ```bash
 python manage.py index --models app_name.ModelName app_name2.ModelName2
 ```
+
+#### Views
+
+#### Search
+
+#### Settings
+
+**Django Document Options**
+
+You can add these options on the `Django` class of each Document class:
+
+```python
+# documents.py
+
+from redis_search_django.documents import JsonDocument
+
+from .models import Category, Product, Tag, Vendor
+
+
+class ProductDocument(JsonDocument):
+    class Django:
+        model = Product
+        fields = ["name", "description", "price", "created_at"]
+        select_related_fields = ["vendor", "category"]
+        prefetch_related_fields = ["tags"]
+        auto_index = True
+        related_models = {
+            Vendor: {
+                "related_name": "product",
+                "many": False,
+            },
+            Category: {
+                "related_name": "product_set",
+                "many": True,
+            },
+            Tag: {
+                "related_name": "product_set",
+                "many": True,
+            },
+        }
+```
+
+- `model` (Required): Django Model class to index.
+- `auto_index` (Default: `True`, Optional): If True, the model will be indexed on create/update/delete.
+- `fields` (Default: `[]`, Optional): List of model fields to index. (Do not add `OneToOneField`, `ForeignKey` or `ManyToManyField` here. These need to be explicitly added to the Document class using `EmbeddedJsonDocument`.)
+- `select_related_fields` (Default: `[]`, Optional): List of fields to use on `queryset.select_related()`.
+- `prefetch_related_fields` (Default: `[]`, Optional): List of fields to use on `queryset.prefetch_related()`.
+- `related_models` (Default: `{}`, Optional): Dictionary of related models.
+  you need to specify the fields **related_name** and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
+  These are used to update the document data if any of the related model instance is updated.
+- `related_models` will be used when a related object is saved that contributes to the document.
+
+**Global Options**
+
+You can add these options to `settings.py`:
+
+- `REDIS_SEARCH_AUTO_INDEX` (Default: `True`): Enable or Disable Auto Index when model instance is created/updated/deleted for all document classes.
+- `REDIS_OM_URL` (Default: `redis://localhost:6379`): Redis Server URL.
 
 # License
 
