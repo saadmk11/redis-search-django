@@ -135,7 +135,7 @@ MEDIA_ROOT = BASE_DIR / "media/"
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# django-redis-search settings
+# redis-search-django settings
 
 REDIS_SEARCH_AUTO_INDEX = True
 REDIS_OM_URL = "redis://localhost:6379/0"
