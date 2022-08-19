@@ -12,7 +12,7 @@
 ![Changelog-CI](https://img.shields.io/github/workflow/status/saadmk11/redis-search-django/Changelog%20CI?label=Changelog%20CI&style=flat-square)
 ![Code Style](https://img.shields.io/badge/Code%20Style-Black-black?style=flat-square)
 
-# Description
+# About
 
 A Django package that provides **auto indexing** and **searching** capabilities for Django model instances using **[RediSearch](https://redis.io/docs/stack/search/)**.
 
@@ -96,6 +96,8 @@ There are **3 types** of documents class available:
 
 You need to inherit from The Base Document Classes mentioned above to build a document class.
 
+```python'
+
 #### Simple Example
 
 For Django Model:
@@ -115,6 +117,8 @@ class Category(models.Model):
 ```
 
 You can create a document class like this:
+
+**Note:** Document classes must be stored in `documents.py` file.
 
 ```python
 # documents.py
@@ -170,6 +174,8 @@ class Product(models.Model):
 ```
 
 You can create a document classes like this:
+
+**Note:** Document classes must be stored in `documents.py` file.
 
 ```python
 # documents.py
