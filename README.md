@@ -14,18 +14,20 @@
 
 # Description
 
-`redis-search-django` is a Django package that provides **indexing** and **searching** capabilities for Django model instances utilizing **RediSearch**.
+A Django package that provides **auto indexing** and **searching** capabilities for Django model instances using **[RediSearch](https://redis.io/docs/stack/search/)**.
 
 # Features
 
 - Management Command to create, update and populate the RediSearch Index.
-- Auto Sync Index on Model object Create, Update and Delete.
-- Auto Sync Index on Related Model object Add, Update, Remove and Delete.
-- Easy to crate Document Classes with Django Form Class like structure.
-- Indexing of models with `OneToOneField`, `ForeignKey` and `ManyToManyField`.
-- Searching of Model instances using `redis-om`.
+- Auto Index on Model object Create, Update and Delete.
+- Auto Index on Related Model object Add, Update, Remove and Delete.
+- Easy to create Document classes (Uses Django Model Form Class like structure).
+- Indexing nested models (e.g: `OneToOneField`, `ForeignKey` and `ManyToManyField`).
+- Searching documents using `redis-om`.
 - Search Result Pagination.
-- Faceted Searching of Model instances.
+- Search Result Sorting.
+- RediSearch Result to Django QuerySet.
+- Faceted Search.
 
 
 # Requirements
@@ -49,10 +51,10 @@ The easiest way to run these Redis modules during local development is to use th
 
 ## Docker Compose
 
-There is a `docker-compose.yaml` file provided in the projects root directory.
-This file will run Redis, RedisJSON and RediSearch during development.
+There is a `docker-compose.yaml` file provided in the project's root directory.
+This file will run Redis with RedisJSON and RediSearch modules during development.
 
-Run the following command to start the containers:
+Run the following command to start the Redis container:
 
 ```bash
 docker compose up -d
@@ -84,15 +86,15 @@ INSTALLED_APPS = [
 
 ### Document Types
 
-There are 3 types of documents class available:
+There are **3 types** of documents class available:
 
 - **JsonDocument:** This uses `RedisJSON` to store the document. If you want to use Embedded Documents (Required For `OneToOneField`, `ForeignKey` and `ManyToManyField`) then use `JsonDocument`.
-- **EmbeddedJsonDocument:** Embedded Json Documents are used for `OneToOneField`, `ForeignKey` and `ManyToManyField` or any types of nested documents.
+- **EmbeddedJsonDocument:** If the document will be embedded inside another document class then use this. Embedded Json Documents are used for `OneToOneField`, `ForeignKey` and `ManyToManyField` or any types of nested documents.
 - **HashDocument:** This uses `RedisHash` to store the documents. It can not be used for nested documents.
 
 ### Creating Document Classes
 
-You need to inherit from Base Document Classes mentioned above to build a document class.
+You need to inherit from The Base Document Classes mentioned above to build a document class.
 
 #### Simple Example
 
@@ -238,35 +240,36 @@ class ProductDocument(JsonDocument):
 #### Note:
 
 - You can not inherit from `HashDocument` for documents that include nested fields.
-- You need to inherit from `EmbeddedJsonDocument` for nested documents.
-- You need to explicitly add `OneToOneField`, `ForeignKey` or `ManyToManyField` with a nested document class if you want to index them.
+- You need to inherit from `EmbeddedJsonDocument` for document classes that will be embedded inside another document class.
+- You need to explicitly add `OneToOneField`, `ForeignKey` or `ManyToManyField` (e.g: `tags: List[TagDocument]`) with an embedded document class if you want to index them.
   you can not add it in the `Django.fields` option.
-- For `related_models` option, you need to specify the fields related name and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
+- For `related_models` option, you need to specify the fields `related_name` and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
 - `related_models` will be used when a related object is saved that contributes to the document.
-- You can define `prepare_{field_name}` method to update the value of the field for indexing.
-- If it is a custom field you must define a `prepare_{field_name}` method that returns the value of the field.
+- You can define `prepare_{field_name}` method to update the value of a field before indexing.
+- If it is a custom field (not a model field) you must define a `prepare_{field_name}` method that returns the value of the field.
 - You can override `get_queryset` method to provide more filtering. This will be used while indexing a queryset.
 - Field names must match model field names or define a `prepare_{field_name}` method.
 
+
 ### Management Command
 
-You can use the `index` management command to index all the models in the database to redis index if it has a Document class defined.
+This package comes with `index` management command that can be used to index all the model instances to Redis index if it has a Document class defined.
 
-**Note:** Make sure that redis is running.
+**Note:** Make sure that Redis is running before running the command.
 
-Just run the following command to index all models that have Document classes defined:
+Run the following command to index **all** models that have Document classes defined:
 
 ```bash
 python manage.py index
 ```
 
-You can use `--migrate-only` option to only update the index schema.
+You can use `--migrate-only` option to **only** update the **index schema**.
 
 ```bash
 python manage.py index --migrate-only
 ```
 
-You can use `--models` to specify which models to index (models must have a Document class defined).
+You can use `--models` to **specify** which models to index (models must have a Document class defined to be indexed).
 
 ```bash
 python manage.py index --models app_name.ModelName app_name2.ModelName2
@@ -274,8 +277,8 @@ python manage.py index --models app_name.ModelName app_name2.ModelName2
 
 ### Views
 
-You can use the `redis_search_django.mixin.RediSearchListViewMixin` to search a document index.
-`RediSearchPaginator` which helps paginate ReadiSearch results is also included in the mixin.
+You can use the `redis_search_django.mixin.RediSearchListViewMixin` with a Django Generic View to search for documents.
+`RediSearchPaginator` which helps paginate `ReadiSearch` results is also added to this mixin.
 
 #### Example
 
@@ -345,7 +348,7 @@ from .documents import ProductDocument
 categories = ["category1", "category2"]
 tags = ["tag1", "tag2"]
 
-# Search For Products That Match The Search Query
+# Search For Products That Match The Search Query (name or description)
 query_expression = (
     ProductDocument.name % "Some search query"
     | ProductDocument.description % "Some search query"
@@ -356,10 +359,10 @@ query_expression = (
     ProductDocument.price >= float(10) & ProductDocument.price <= float(100)
 )
 
-# Search For Products That includes Following Categories
+# Search for Products that include following Categories
 query_expression = ProductDocument.category.name << ["category1", "category2"]
 
-# Search For Products That includes Following Tags
+# Search for Products that include following Tags
 query_expression = ProductDocument.tags.name << ["tag1", "tag2"]
 
 # Query expression can be passed on the `find` method
@@ -368,9 +371,9 @@ result = ProductDocument.find(query_expression).sort_by("-price").execute()
 
 For more details checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/getting_started.md)
 
-### Faceted Search / RediSearch Aggregation
+### RediSearch Aggregation / Faceted Search
 
-`redis-om` does not supports faceted search (RediSearch Aggregation). So this package uses `redis-py` to do faceted search.
+`redis-om` does not support faceted search (RediSearch Aggregation). So this package uses `redis-py` to do faceted search.
 
 #### Example
 
@@ -390,28 +393,27 @@ request1 = ProductDocument.build_aggregate_request(query_expression)
 request2 = ProductDocument.build_aggregate_request(query_expression)
 
 # Get the number of products for each category
-result = ProductDocument.aggregate(
+ProductDocument.aggregate(
     request1.group_by(
         ["@category_name"],
         reducers.count().alias("count"),
     )
 )
-
 # >> [{"category_name": "Shoes", "count": "112"}, {"category_name": "Cloths", "count": "200"}]
 
 
 # Get the number of products for each tag
-result2 = ProductDocument.aggregate(
+ProductDocument.aggregate(
     request2.group_by(
         ["@tags_name"],
         reducers.count().alias("count"),
     )
 )
-
 # >> [{"tags_name": "Blue", "count": "14"}, {"tags_name": "Small", "count": "57"}]
 ```
 
-For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable/examples/search_json_examples.html?highlight=aggregate#Aggregation)
+For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable/examples/search_json_examples.html?highlight=aggregate#Aggregation) and
+[RediSearch Aggregation docs](https://redis.io/docs/stack/search/reference/aggregations/)
 
 ### Settings
 
@@ -451,20 +453,20 @@ class ProductDocument(JsonDocument):
 ```
 
 - **`model`** (Required): Django Model class to index.
-- **`auto_index`** (Default: `True`, Optional): If True, the model will be indexed on create/update/delete.
+- **`auto_index`** (Default: `True`, Optional): If True, the model instances will be indexed on create/update/delete.
 - **`fields`** (Default: `[]`, Optional): List of model fields to index. (Do not add `OneToOneField`, `ForeignKey` or `ManyToManyField` here. These need to be explicitly added to the Document class using `EmbeddedJsonDocument`.)
 - **`select_related_fields`** (Default: `[]`, Optional): List of fields to use on `queryset.select_related()`.
 - **`prefetch_related_fields`** (Default: `[]`, Optional): List of fields to use on `queryset.prefetch_related()`.
 - **`related_models`** (Default: `{}`, Optional): Dictionary of related models.
-  you need to specify the fields **related_name** and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
-  These are used to update the document data if any of the related model instance is updated.
-  `related_models` will be used when a related object is saved that contributes to the document.
+  You need to specify the fields `related_name` and if it is a `ManyToManyField` or a `ForeignKey` Field then specify `"many": True`.
+  These are used to update the document data if any of the related model instances are updated.
+  `related_models` will be used when a related object is saved/added/removed/deleted that contributes to the document.
 
 For `redis-om` specific options checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/models.md)
 
 #### Global Options
 
-You can add these options to `settings.py`:
+You can add these options to your Django `settings.py` File:
 
 - **`REDIS_SEARCH_AUTO_INDEX`** (Default: `True`): Enable or Disable Auto Index when model instance is created/updated/deleted for all document classes.
 - **`REDIS_OM_URL`** (Default: `redis://localhost:6379`): Redis Server URL.

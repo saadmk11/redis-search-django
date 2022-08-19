@@ -1,25 +1,25 @@
 # Setup Example Project
 
-#### clone the repository:
+#### Clone the repository:
 
 ```bash
 git clone git@github.com:saadmk11/redis-search-django.git
 ```
 
-#### create virtual environment and activate:
+#### Create a virtual environment and activate it:
 
 ```bash
 virtualenv -p python3 venv
 source venv/bin/activate
 ```
 
-#### change directory:
+#### Change to project directory:
 
 ```bash
 cd redis-search-django/example
 ```
 
-#### install requirements:
+#### Install requirements:
 
 ```bash
 pip install -r requirements.txt
