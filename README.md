@@ -96,8 +96,6 @@ There are **3 types** of documents class available:
 
 You need to inherit from The Base Document Classes mentioned above to build a document class.
 
-```python'
-
 #### Simple Example
 
 For Django Model:
