@@ -4,7 +4,6 @@
 [![Supported Python Versions](https://img.shields.io/pypi/pyversions/redis-search-django?style=flat-square)](https://pypi.org/project/redis-search-django/)
 [![Supported Django Versions](https://img.shields.io/pypi/frameworkversions/django/redis-search-django?color=darkgreen&style=flat-square)](https://pypi.org/project/redis-search-django/)
 [![License](https://img.shields.io/github/license/saadmk11/redis-search-django?style=flat-square)](https://github.com/saadmk11/redis-search-django/blob/main/LICENSE)
-[![GitHub stars](https://img.shields.io/github/stars/saadmk11/redis-search-django?color=success&style=flat-square)](https://github.com/saadmk11/redis-search-django/stargazers)
 
 ![Django Tests](https://img.shields.io/github/workflow/status/saadmk11/redis-search-django/Django%20Tests?label=Test&style=flat-square)
 ![Codecov](https://img.shields.io/codecov/c/github/saadmk11/redis-search-django?style=flat-square&token=ugjHXbEKib)
@@ -22,13 +21,12 @@ A Django package that provides **auto indexing** and **searching** capabilities 
 - Auto Index on Model object Create, Update and Delete.
 - Auto Index on Related Model object Add, Update, Remove and Delete.
 - Easy to create Document classes (Uses Django Model Form Class like structure).
-- Indexing nested models (e.g: `OneToOneField`, `ForeignKey` and `ManyToManyField`).
-- Searching documents using `redis-om`.
+- Index nested models (e.g: `OneToOneField`, `ForeignKey` and `ManyToManyField`).
+- Search documents using `redis-om`.
 - Search Result Pagination.
 - Search Result Sorting.
 - RediSearch Result to Django QuerySet.
 - Faceted Search.
-
 
 # Requirements
 
