@@ -74,6 +74,8 @@ class ProductDocument(JsonDocument):
         model = Product
         # Django Model fields can be added to the Document automatically.
         fields = ["name", "description", "price", "created_at", "quantity", "available"]
+        prefetch_related_fields = ["tags"]
+        select_related_fields = ["vendor", "category"]
         related_models = {
             Vendor: {
                 "related_name": "product",
