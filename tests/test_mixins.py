@@ -16,8 +16,9 @@ from redis_search_django.mixins import (
 )
 from redis_search_django.paginator import RediSearchPaginator
 from redis_search_django.query import RediSearchQuery
-from tests.models import Category
-from tests.utils import is_redis_running
+
+from .helpers import is_redis_running
+from .models import Category
 
 
 def test_redis_search_mixin(document_class):

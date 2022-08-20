@@ -5,7 +5,8 @@ from django.core.paginator import EmptyPage, PageNotAnInteger
 
 from redis_search_django.paginator import RediSearchPaginator
 from redis_search_django.query import RediSearchQuery, RediSearchResult
-from tests.models import Category
+
+from .models import Category
 
 
 def test_paginator_validate_number():

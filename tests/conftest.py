@@ -5,10 +5,11 @@ from typing import List, Optional
 import pytest
 
 from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
-from tests.models import Category, Product, Tag, Vendor
+
+from .models import Category, Product, Tag, Vendor
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def document_class():
     def build_document_class(
         document_type,
@@ -33,7 +34,7 @@ def document_class():
     return build_document_class
 
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def nested_document_class(document_class):
     CategoryEmbeddedJsonDocument = document_class(
         EmbeddedJsonDocument, Category, ["name"]

@@ -5,8 +5,8 @@ from redis_om import NotFoundError
 
 from redis_search_django.documents import JsonDocument
 
+from .helpers import is_redis_running
 from .models import Category, Product, Tag, Vendor
-from .utils import is_redis_running
 
 
 @pytest.mark.skipif(not is_redis_running(), reason="Redis is not running")

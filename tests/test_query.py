@@ -4,7 +4,8 @@ import pytest
 from pytest_django.asserts import assertQuerysetEqual
 
 from redis_search_django.query import RediSearchQuery, RediSearchResult
-from tests.models import Category
+
+from .models import Category
 
 
 def test_search_result_str():

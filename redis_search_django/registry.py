@@ -82,17 +82,11 @@ class DocumentRegistry:
 
     def index_documents(self, models: Union[List[str], None] = None) -> None:
         """Index documents for all or specific registered Django models."""
-        if not getattr(settings, "REDIS_SEARCH_AUTO_INDEX", True):
-            return
-
         for (
             django_model,
             document_classes,
         ) in self.django_model_map.items():
             for document_class in document_classes:
-                if not document_class._django.auto_index:
-                    continue
-
                 if models:
                     if django_model._meta.label in models:
                         document_class.index_all()

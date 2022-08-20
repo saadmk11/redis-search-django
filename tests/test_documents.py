@@ -12,8 +12,9 @@ from redis_search_django.documents import (
     HashDocument,
     JsonDocument,
 )
-from tests.models import Category, Product, Tag, Vendor
-from tests.utils import is_redis_running
+
+from .helpers import is_redis_running
+from .models import Category, Product, Tag, Vendor
 
 
 def test_django_options():

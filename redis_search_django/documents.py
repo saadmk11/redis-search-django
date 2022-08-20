@@ -30,7 +30,7 @@ class DjangoOptions:
     select_related_fields: List[str]
     prefetch_related_fields: List[str]
     related_models: Dict[Type[models.Model], Dict[str, Union[str, bool]]]
-    auto_index: bool = True
+    auto_index: bool
 
     def __init__(self, options: Any = None) -> None:
         self.model = getattr(options, "model", None)

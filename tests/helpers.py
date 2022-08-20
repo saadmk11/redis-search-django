@@ -6,6 +6,7 @@ from redis_om import has_redisearch
 
 @lru_cache(maxsize=1)
 def is_redis_running():
+    """Check if redis is running."""
     try:
         return has_redisearch()
     except redis.exceptions.ConnectionError:
