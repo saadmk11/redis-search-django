@@ -493,6 +493,11 @@ You can add these options to your Django `settings.py` File:
 - **`REDIS_OM_URL`** (Default: `redis://localhost:6379`): Redis Server URL.
 
 
+# Example Application Screenshot
+
+![RediSearch Django](https://user-images.githubusercontent.com/24854406/185760315-4e12d02b-68a2-499a-a6d6-88d8162b5447.png)
+
+
 # License
 
 The code in this project is released under the [MIT License](LICENSE).
