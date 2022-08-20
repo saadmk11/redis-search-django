@@ -132,6 +132,14 @@ class CategoryDocument(JsonDocument):
         fields = ["name", "slug"]
 ```
 
+Run Index Django Management Command to create the index on Redis:
+
+**Note:** This will also populate the index with existing data on the database
+
+```bash
+python manage.py index
+```
+
 Now category objects will be indexed on create/update/delete.
 
 #### More Complex Example
@@ -241,7 +249,7 @@ class ProductDocument(JsonDocument):
         return obj.name.upper()
 ```
 
-#### Note:
+**Note:**
 
 - You can not inherit from `HashDocument` for documents that include nested fields.
 - You need to inherit from `EmbeddedJsonDocument` for document classes that will be embedded inside another document class.
@@ -253,6 +261,15 @@ class ProductDocument(JsonDocument):
 - If it is a custom field (not a model field) you must define a `prepare_{field_name}` method that returns the value of the field.
 - You can override `get_queryset` method to provide more filtering. This will be used while indexing a queryset.
 - Field names must match model field names or define a `prepare_{field_name}` method.
+
+
+Run Index Django Management Command to create the index on Redis:
+
+**Note:** This will also populate the index with existing data on the database
+
+```bash
+python manage.py index
+```
 
 
 ### Management Command
