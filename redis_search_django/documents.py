@@ -89,7 +89,7 @@ class Document(RedisModel, ABC):
 
         return [
             {
-                str(result[i], "utf-8"): str(result[i + 1], "utf-8")
+                decode_string(result[i]): decode_string(result[i + 1])
                 for i in range(0, len(result), 2)
             }
             for result in results.rows
@@ -307,6 +307,14 @@ class Document(RedisModel, ABC):
     def id(self) -> Union[int, str]:
         """Alias for the primary key of the document"""
         return self.pk
+
+
+def decode_string(value: Union[str, bytes]) -> str:
+    """Decode a string from bytes to str"""
+
+    if isinstance(value, bytes):
+        return value.decode("utf-8")
+    return value
 
 
 class JsonDocument(Document, JsonModel, ABC):
