@@ -31,7 +31,8 @@ class Command(BaseCommand):
         get_redis_connection()
         Migrator().run()
 
-        if only_migrate:
-            return
+        self.stdout.write(self.style.SUCCESS("Successfully migrated indices"))
 
-        document_registry.index_documents(models)
+        if not only_migrate:
+            document_registry.index_documents(models)
+            self.stdout.write(self.style.SUCCESS("Successfully indexed documents"))
