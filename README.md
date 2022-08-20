@@ -138,7 +138,7 @@ class CategoryDocument(JsonDocument):
 python manage.py index
 ```
 
-**Note:** This will also populate the index with existing data on the database
+**Note:** This will also populate the index with existing data from the database
 
 Now category objects will be indexed on create/update/delete.
 
@@ -269,7 +269,7 @@ class ProductDocument(JsonDocument):
 python manage.py index
 ```
 
-**Note:** This will also populate the index with existing data on the database
+**Note:** This will also populate the index with existing data from the database
 
 
 ### Management Command
