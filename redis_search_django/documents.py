@@ -226,7 +226,7 @@ class Document(RedisModel, ABC):
         """Index all items in the Django model queryset"""
         obj_list = []
 
-        for instance in queryset.iterator():
+        for instance in queryset.iterator(chunk_size=2000):
             obj_list.append(
                 cls.from_model_instance(instance, exclude_obj=exclude_obj, save=False)
             )
