@@ -18,6 +18,5 @@ DATABASES = {
 }
 
 REDIS_SEARCH_AUTO_INDEX = True
-REDIS_OM_URL = "redis://localhost:6379/0"
 
 USE_TZ = True

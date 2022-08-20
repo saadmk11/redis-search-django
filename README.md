@@ -438,6 +438,17 @@ For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable
 
 ### Settings
 
+
+#### Environment Variables
+
+- **`REDIS_OM_URL`** (Default: `redis://localhost:6379`): This environment variable follows the `redis-py` URL format. If you are using external redis server
+You need to set this variable with the URL of the redis server following this pattern: `redis://[[username]:[password]]@[host]:[post]/[database number]`
+
+**Example:** `redis://redis_user:password@some.other.part.cloud.redislabs.com:6379/0`
+
+For more details checkout [redis-om docs](https://github.com/redis/redis-om-python/blob/main/docs/getting_started.md#setting-the-redis-url-environment-variable)
+
+
 #### Django Document Options
 
 You can add these options on the `Django` class of each Document class:
@@ -490,7 +501,6 @@ For `redis-om` specific options checkout [redis-om docs](https://github.com/redi
 You can add these options to your Django `settings.py` File:
 
 - **`REDIS_SEARCH_AUTO_INDEX`** (Default: `True`): Enable or Disable Auto Index when model instance is created/updated/deleted for all document classes.
-- **`REDIS_OM_URL`** (Default: `redis://localhost:6379`): Redis Server URL.
 
 
 # Example Application Screenshot
