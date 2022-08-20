@@ -98,7 +98,7 @@ You need to inherit from The Base Document Classes mentioned above to build a do
 
 #### Simple Example
 
-For Django Model:
+**1. For Django Model:**
 
 ```python
 # models.py
@@ -114,7 +114,7 @@ class Category(models.Model):
         return self.name
 ```
 
-You can create a document class like this:
+**2. You can create a document class like this:**
 
 **Note:** Document classes must be stored in `documents.py` file.
 
@@ -132,19 +132,19 @@ class CategoryDocument(JsonDocument):
         fields = ["name", "slug"]
 ```
 
-Run Index Django Management Command to create the index on Redis:
-
-**Note:** This will also populate the index with existing data on the database
+**3. Run Index Django Management Command to create the index on Redis:**
 
 ```bash
 python manage.py index
 ```
 
+**Note:** This will also populate the index with existing data on the database
+
 Now category objects will be indexed on create/update/delete.
 
 #### More Complex Example
 
-For Django Models:
+**1. For Django Models:**
 
 ```python
 # models.py
@@ -179,7 +179,7 @@ class Product(models.Model):
         return self.name
 ```
 
-You can create a document classes like this:
+**2. You can create a document classes like this:**
 
 **Note:** Document classes must be stored in `documents.py` file.
 
@@ -263,13 +263,13 @@ class ProductDocument(JsonDocument):
 - Field names must match model field names or define a `prepare_{field_name}` method.
 
 
-Run Index Django Management Command to create the index on Redis:
-
-**Note:** This will also populate the index with existing data on the database
+**3. Run Index Django Management Command to create the index on Redis:**
 
 ```bash
 python manage.py index
 ```
+
+**Note:** This will also populate the index with existing data on the database
 
 
 ### Management Command
@@ -437,7 +437,6 @@ For more details checkout [redis-py docs](https://redis.readthedocs.io/en/stable
 [RediSearch Aggregation docs](https://redis.io/docs/stack/search/reference/aggregations/)
 
 ### Settings
-
 
 #### Environment Variables
 
