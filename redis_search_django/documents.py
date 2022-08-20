@@ -86,8 +86,12 @@ class Document(RedisModel, ABC):
     def aggregate(cls, aggregate_request: AggregateRequest) -> List[Dict[str, Any]]:
         """Aggregate data and return a list of dictionaries containing the results"""
         results = cls.db().ft(cls._meta.index_name).aggregate(aggregate_request)
+
         return [
-            {result[i]: result[i + 1] for i in range(0, len(result), 2)}
+            {
+                str(result[i], "utf-8"): str(result[i + 1], "utf-8")
+                for i in range(0, len(result), 2)
+            }
             for result in results.rows
         ]
 
