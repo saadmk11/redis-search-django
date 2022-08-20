@@ -25,6 +25,9 @@ model_field_class_config: Dict[Type[models.Field], Dict[str, Any]] = {
         "index": True,
         "sortable": True,
     },
+    # We are using int type for models.BooleanField
+    # as redis-om creates schema for this field as NUMERIC field.
+    # see https://github.com/redis/redis-om-python/issues/193
     models.BooleanField: {
         "type": int,
         "full_text_search": False,

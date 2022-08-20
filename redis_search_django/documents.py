@@ -146,7 +146,10 @@ class Document(RedisModel, ABC):
                 if field_name == "pk":
                     value = str(value)
 
-                data[field_name] = value
+                # This is added to convert models.BooleanField value to int
+                # as redis-om creates schema for the field as NUMERIC field.
+                # see https://github.com/redis/redis-om-python/issues/193
+                data[field_name] = int(value) if isinstance(value, bool) else value
         return data
 
     @classmethod
@@ -286,7 +289,7 @@ class Document(RedisModel, ABC):
                 if annotation == str:
                     field_config["sortable"] = False
 
-            required = field_type.null or field_type.blank
+            required = not (field_type.null or field_type.blank)
             field_info = Field(**field_config)
             type_annotations[field_name] = annotation
 
