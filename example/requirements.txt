@@ -1,4 +1,4 @@
 # Install redis-search-django
 -e ..
-Django==3.2.15
+Django==4.1.5
 Pillow==9.2.0
