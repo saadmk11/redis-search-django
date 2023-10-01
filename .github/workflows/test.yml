@@ -35,7 +35,7 @@ jobs:
           --health-retries 5
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
 
       - name: Install and Setup Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
