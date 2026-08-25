@@ -1,0 +1,25 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ title }} — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+{% if hint %}<p class="muted">{{ hint }}</p>{% endif %}
+<p><a href="{% url create_url %}">add</a> · <a href="{% url 'catalog' %}">catalog</a></p>
+<table>
+    <tr><th>id</th><th>name</th><th></th></tr>
+    {% for object in object_list %}
+        <tr>
+            <td>{{ object.pk }}</td>
+            <td>{{ object }}</td>
+            <td>
+                <a href="{% url update_url object.pk %}">edit</a>
+                ·
+                <a href="{% url delete_url object.pk %}">delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="3">None yet.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

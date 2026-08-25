@@ -1,4 +1,7 @@
+import json
+
 from django import template
+from django.utils.safestring import mark_safe
 
 register = template.Library()
 
@@ -12,3 +15,8 @@ def query_string(request, **kwargs):
     if params:
         return "&" + params.urlencode()
     return ""
+
+
+@register.filter
+def pretty_json(value):
+    return mark_safe(json.dumps(value, indent=2, default=str))

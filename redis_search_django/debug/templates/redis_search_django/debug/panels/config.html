@@ -1,0 +1,27 @@
+<div class="rsd-config">
+    <section class="rsd-card">
+        <h3>REDIS_SEARCH</h3>
+        <div class="rsd-table-wrap">
+        <table class="rsd-table">
+            <tbody>
+                {% for row in stats.redis_search %}
+                <tr><th>{{ row.key }}</th><td><code>{{ row.value }}</code></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+    </section>
+    <section class="rsd-card">
+        <h3>REDIS_SEARCH_DEBUG</h3>
+        <div class="rsd-table-wrap">
+        <table class="rsd-table">
+            <tbody>
+                {% for row in stats.debug %}
+                <tr><th>{{ row.key }}</th><td><code>{{ row.value }}</code></td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        <p class="rsd-muted">Django DEBUG = {{ stats.debug_enabled }}</p>
+    </section>
+</div>

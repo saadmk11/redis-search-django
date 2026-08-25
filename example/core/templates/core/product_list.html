@@ -1,0 +1,44 @@
+{% extends "core/base.html" %}
+
+{% block title %}Products — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Products</h1>
+<p class="muted">SQLite source of truth. Open a row to compare it with Redis.</p>
+<p><a href="{% url 'product-create' %}">add product</a> · <a href="{% url 'catalog' %}">catalog</a></p>
+<table>
+    <tr>
+        <th>id</th>
+        <th>name</th>
+        <th>available</th>
+        <th>price</th>
+        <th>category</th>
+        <th>vendor</th>
+        <th></th>
+    </tr>
+    {% for product in object_list %}
+        <tr>
+            <td><a href="{% url 'product-detail' product.pk %}">{{ product.pk }}</a></td>
+            <td>{{ product.name }}</td>
+            <td>{{ product.available }}</td>
+            <td>{{ product.price }}</td>
+            <td>{{ product.category.name }}</td>
+            <td>{{ product.vendor.name }}</td>
+            <td>
+                <a href="{% url 'product-update' product.pk %}">edit</a>
+                ·
+                <a href="{% url 'product-delete' product.pk %}">delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="7">None yet.</td></tr>
+    {% endfor %}
+</table>
+{% if is_paginated %}
+    <p>
+        {% if page_obj.has_previous %}<a href="?page={{ page_obj.previous_page_number }}">prev</a>{% endif %}
+        page {{ page_obj.number }} / {{ paginator.num_pages }}
+        {% if page_obj.has_next %}<a href="?page={{ page_obj.next_page_number }}">next</a>{% endif %}
+    </p>
+{% endif %}
+{% endblock %}

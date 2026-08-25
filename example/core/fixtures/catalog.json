@@ -1,0 +1,1306 @@
+[
+  {
+    "model": "core.category",
+    "pk": 1,
+    "fields": {
+      "name": "Electronics",
+      "slug": "electronics"
+    }
+  },
+  {
+    "model": "core.category",
+    "pk": 2,
+    "fields": {
+      "name": "Clothing",
+      "slug": "clothing"
+    }
+  },
+  {
+    "model": "core.category",
+    "pk": 3,
+    "fields": {
+      "name": "Books",
+      "slug": "books"
+    }
+  },
+  {
+    "model": "core.category",
+    "pk": 4,
+    "fields": {
+      "name": "Home",
+      "slug": "home"
+    }
+  },
+  {
+    "model": "core.category",
+    "pk": 5,
+    "fields": {
+      "name": "Sports",
+      "slug": "sports"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 1,
+    "fields": {
+      "name": "sale"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 2,
+    "fields": {
+      "name": "new"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 3,
+    "fields": {
+      "name": "popular"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 4,
+    "fields": {
+      "name": "wireless"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 5,
+    "fields": {
+      "name": "organic"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 6,
+    "fields": {
+      "name": "outdoor"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 7,
+    "fields": {
+      "name": "premium"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 8,
+    "fields": {
+      "name": "budget"
+    }
+  },
+  {
+    "model": "core.tag",
+    "pk": 9,
+    "fields": {
+      "name": "discontinued"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 1,
+    "fields": {
+      "logo": "",
+      "identifier": "7ce99f3e-1c8c-5e95-8287-daa9437c91ac",
+      "name": "Aether Labs",
+      "email": "hello@aetherlabs.example",
+      "establishment_date": "2001-02-02"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 2,
+    "fields": {
+      "logo": "",
+      "identifier": "4190d023-b3ff-5d37-855e-6a07286d6aaa",
+      "name": "Northwind Goods",
+      "email": "hello@northwindgoods.example",
+      "establishment_date": "2002-03-03"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 3,
+    "fields": {
+      "logo": "",
+      "identifier": "b1ed5d53-e549-5b9d-b85f-3d9cd4a8e659",
+      "name": "Cedar & Co",
+      "email": "hello@cedarandco.example",
+      "establishment_date": "2003-04-04"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 4,
+    "fields": {
+      "logo": "",
+      "identifier": "76518d0b-cf5c-5c1a-8b38-b7c161174534",
+      "name": "Blue Harbor",
+      "email": "hello@blueharbor.example",
+      "establishment_date": "2004-05-05"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 5,
+    "fields": {
+      "logo": "",
+      "identifier": "d8e7faad-fae8-50c3-b1ce-537c07eef4b9",
+      "name": "Summit Outfitters",
+      "email": "hello@summitoutfitters.example",
+      "establishment_date": "2005-06-06"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 6,
+    "fields": {
+      "logo": "",
+      "identifier": "c6e32b69-66d7-5a17-a37f-e933b975c766",
+      "name": "Paper Lantern",
+      "email": "hello@paperlantern.example",
+      "establishment_date": "2006-07-07"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 7,
+    "fields": {
+      "logo": "",
+      "identifier": "664ab248-c468-5ae8-9255-d965fdf3023d",
+      "name": "Lumen Audio",
+      "email": "hello@lumenaudio.example",
+      "establishment_date": "2007-08-08"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 8,
+    "fields": {
+      "logo": "",
+      "identifier": "0fe55e68-49f6-5a96-9693-4293fc65c224",
+      "name": "Field & Hearth",
+      "email": "hello@fieldandhearth.example",
+      "establishment_date": "2008-09-09"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 9,
+    "fields": {
+      "logo": "",
+      "identifier": "6beeff67-deaf-52c8-909b-d94dd23b73c6",
+      "name": "Orbit Wear",
+      "email": "hello@orbitwear.example",
+      "establishment_date": "2009-10-10"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 10,
+    "fields": {
+      "logo": "",
+      "identifier": "4bdaf307-0d1a-5b71-933f-78129c84fcb8",
+      "name": "Kinetic Gear",
+      "email": "hello@kineticgear.example",
+      "establishment_date": "2010-11-11"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 11,
+    "fields": {
+      "logo": "",
+      "identifier": "865cb50e-e9ea-588c-9f96-68116ac300a3",
+      "name": "Harbor Home",
+      "email": "hello@harborhome.example",
+      "establishment_date": "2011-12-12"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 12,
+    "fields": {
+      "logo": "",
+      "identifier": "2a86a5f8-d09b-5150-a5d7-e9b824b6b143",
+      "name": "Pixel Forge",
+      "email": "hello@pixelforge.example",
+      "establishment_date": "2012-01-13"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 13,
+    "fields": {
+      "logo": "",
+      "identifier": "ec15fc07-35d3-55e6-9542-ccc04af35f34",
+      "name": "Quiet Press",
+      "email": "hello@quietpress.example",
+      "establishment_date": "2013-02-14"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 14,
+    "fields": {
+      "logo": "",
+      "identifier": "486c8393-8371-541c-83c4-e133be3b7c4c",
+      "name": "Trail Made",
+      "email": "hello@trailmade.example",
+      "establishment_date": "2014-03-15"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 15,
+    "fields": {
+      "logo": "",
+      "identifier": "3206c806-c946-5713-8c86-e5fdfc7c692d",
+      "name": "Nimbus Kitchen",
+      "email": "hello@nimbuskitchen.example",
+      "establishment_date": "2015-04-16"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 16,
+    "fields": {
+      "logo": "",
+      "identifier": "e81a4a91-0154-565a-b54e-09142f715a65",
+      "name": "Arc Studio",
+      "email": "hello@arcstudio.example",
+      "establishment_date": "2016-05-17"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 17,
+    "fields": {
+      "logo": "",
+      "identifier": "67b40657-5a48-5dba-a9c4-41a5d6385eb8",
+      "name": "Willow Threads",
+      "email": "hello@willowthreads.example",
+      "establishment_date": "2017-06-18"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 18,
+    "fields": {
+      "logo": "",
+      "identifier": "b487fbf6-9329-51be-b343-f0e5dbe35165",
+      "name": "Bright Byte",
+      "email": "hello@brightbyte.example",
+      "establishment_date": "2018-07-19"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 19,
+    "fields": {
+      "logo": "",
+      "identifier": "2f5e95e6-9464-5b7f-aa3c-5147d750fa39",
+      "name": "Old Oak Books",
+      "email": "hello@oldoakbooks.example",
+      "establishment_date": "2019-08-20"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 20,
+    "fields": {
+      "logo": "",
+      "identifier": "69e16f06-436b-5891-aaab-00e52a0f54fc",
+      "name": "Coastal Supply",
+      "email": "hello@coastalsupply.example",
+      "establishment_date": "2020-09-21"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 21,
+    "fields": {
+      "logo": "",
+      "identifier": "592f3cbc-b60e-5d0b-8fc6-db40b83a6107",
+      "name": "Hidden Stock",
+      "email": "hello@hiddenstock.example",
+      "establishment_date": "2021-10-22"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 22,
+    "fields": {
+      "logo": "",
+      "identifier": "eae47ff7-f205-5b45-9caf-2db33450a757",
+      "name": "Archive Only",
+      "email": "hello@archiveonly.example",
+      "establishment_date": "2022-11-23"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 23,
+    "fields": {
+      "logo": "",
+      "identifier": "81d4769e-5ba1-51ad-b342-127201eaae52",
+      "name": "Maple Works",
+      "email": "hello@mapleworks.example",
+      "establishment_date": "2023-12-24"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 24,
+    "fields": {
+      "logo": "",
+      "identifier": "bb61cb39-540c-5347-abc2-fbcb8ff5c38c",
+      "name": "Iron & Oak",
+      "email": "hello@ironandoak.example",
+      "establishment_date": "2000-01-25"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 25,
+    "fields": {
+      "logo": "",
+      "identifier": "dac11386-92e0-5ff9-8d9b-861ae498f6e3",
+      "name": "Second Light",
+      "email": "hello@secondlight.example",
+      "establishment_date": "2001-02-26"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 26,
+    "fields": {
+      "logo": "",
+      "identifier": "8e4aba7c-2d8a-58a3-8b06-96f1785923b3",
+      "name": "Copper Finch",
+      "email": "hello@copperfinch.example",
+      "establishment_date": "2002-03-27"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 27,
+    "fields": {
+      "logo": "",
+      "identifier": "055539c9-dc45-555e-8231-6c7af34475e2",
+      "name": "Redwood Supply",
+      "email": "hello@redwoodsupply.example",
+      "establishment_date": "2003-04-01"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 28,
+    "fields": {
+      "logo": "",
+      "identifier": "28869155-90ea-5b27-a3b9-e77866f9a4ce",
+      "name": "Night Market",
+      "email": "hello@nightmarket.example",
+      "establishment_date": "2004-05-02"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 29,
+    "fields": {
+      "logo": "",
+      "identifier": "b9a7b836-fbc0-5f17-b91c-dc50d205becc",
+      "name": "Solstice Goods",
+      "email": "hello@solsticegoods.example",
+      "establishment_date": "2005-06-03"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 30,
+    "fields": {
+      "logo": "",
+      "identifier": "803af4c1-96fc-53e0-be5f-052de3c42f48",
+      "name": "River Bend",
+      "email": "hello@riverbend.example",
+      "establishment_date": "2006-07-04"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 31,
+    "fields": {
+      "logo": "",
+      "identifier": "afd06042-658b-5a37-9281-4a5de3e32e01",
+      "name": "Ash & Ember",
+      "email": "hello@ashandember.example",
+      "establishment_date": "2007-08-05"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 32,
+    "fields": {
+      "logo": "",
+      "identifier": "ca2fb6ba-bd2a-5888-a38b-3859db374886",
+      "name": "Open Range",
+      "email": "hello@openrange.example",
+      "establishment_date": "2008-09-06"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 33,
+    "fields": {
+      "logo": "",
+      "identifier": "bc3e7745-cb50-59fb-ae99-0489c3aae291",
+      "name": "Little Press",
+      "email": "hello@littlepress.example",
+      "establishment_date": "2009-10-07"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 34,
+    "fields": {
+      "logo": "",
+      "identifier": "24d6482f-5243-5ce1-bd1c-c047767c981c",
+      "name": "North Peak",
+      "email": "hello@northpeak.example",
+      "establishment_date": "2010-11-08"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 35,
+    "fields": {
+      "logo": "",
+      "identifier": "4061508e-aee9-532e-8334-05195029ff96",
+      "name": "South Window",
+      "email": "hello@southwindow.example",
+      "establishment_date": "2011-12-09"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 36,
+    "fields": {
+      "logo": "",
+      "identifier": "bdeddd4e-6178-5c1d-ac84-5e84c7797efe",
+      "name": "Glass Garden",
+      "email": "hello@glassgarden.example",
+      "establishment_date": "2012-01-10"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 37,
+    "fields": {
+      "logo": "",
+      "identifier": "375f59a5-257c-5aee-9d6f-2f900eaa7b26",
+      "name": "Plain Spoken",
+      "email": "hello@plainspoken.example",
+      "establishment_date": "2013-02-11"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 38,
+    "fields": {
+      "logo": "",
+      "identifier": "6e9e0c04-0310-5cac-9f32-de5f2a42d8cd",
+      "name": "Hold Fast",
+      "email": "hello@holdfast.example",
+      "establishment_date": "2014-03-12"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 39,
+    "fields": {
+      "logo": "",
+      "identifier": "19643b36-1efd-5872-93b7-ac1f35f5cb12",
+      "name": "Clearwater Co",
+      "email": "hello@clearwaterco.example",
+      "establishment_date": "2015-04-13"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 40,
+    "fields": {
+      "logo": "",
+      "identifier": "f93ede3f-ce34-5215-a39d-bb46dca41bdc",
+      "name": "Last Page",
+      "email": "hello@lastpage.example",
+      "establishment_date": "2016-05-14"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 1,
+    "fields": {
+      "name": "Noise-Canceling Headphones",
+      "description": "Wireless over-ear audio headphones with noise canceling. Long battery for music, calls, and everyday listening.",
+      "category": 1,
+      "vendor": 1,
+      "tags": [
+        3,
+        4,
+        7
+      ],
+      "price": "199.99",
+      "available": true,
+      "quantity": 25,
+      "created_at": "2024-02-02T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 2,
+    "fields": {
+      "name": "Mechanical Keyboard",
+      "description": "Mechanical keyboard with hot-swap switches and RGB backlight for desk work and typing.",
+      "category": 1,
+      "vendor": 2,
+      "tags": [
+        2,
+        3
+      ],
+      "price": "129.00",
+      "available": true,
+      "quantity": 40,
+      "created_at": "2024-03-03T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 3,
+    "fields": {
+      "name": "USB-C Hub",
+      "description": "Aluminum USB-C hub with HDMI and an SD reader for laptops and desk setups.",
+      "category": 1,
+      "vendor": 3,
+      "tags": [
+        2,
+        8
+      ],
+      "price": "49.50",
+      "available": true,
+      "quantity": 80,
+      "created_at": "2024-04-04T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 4,
+    "fields": {
+      "name": "4K Action Camera",
+      "description": "Waterproof 4K action camera with image stabilization for outdoor video.",
+      "category": 1,
+      "vendor": 4,
+      "tags": [
+        3,
+        6
+      ],
+      "price": "279.00",
+      "available": true,
+      "quantity": 15,
+      "created_at": "2024-05-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 5,
+    "fields": {
+      "name": "Wireless Earbuds",
+      "description": "Compact wireless audio earbuds with a charging case for music and calls.",
+      "category": 1,
+      "vendor": 5,
+      "tags": [
+        1,
+        4
+      ],
+      "price": "89.99",
+      "available": true,
+      "quantity": 60,
+      "created_at": "2024-06-06T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 6,
+    "fields": {
+      "name": "Bluetooth Speaker",
+      "description": "Portable wireless audio speaker for indoor and outdoor listening.",
+      "category": 1,
+      "vendor": 6,
+      "tags": [
+        4,
+        6
+      ],
+      "price": "74.00",
+      "available": true,
+      "quantity": 35,
+      "created_at": "2024-07-07T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 7,
+    "fields": {
+      "name": "USB Microphone",
+      "description": "USB audio microphone for calls, podcasts, and voice recording.",
+      "category": 1,
+      "vendor": 7,
+      "tags": [
+        2,
+        7
+      ],
+      "price": "99.00",
+      "available": true,
+      "quantity": 22,
+      "created_at": "2024-08-08T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 8,
+    "fields": {
+      "name": "Laptop Stand",
+      "description": "Aluminum laptop stand that lifts any notebook on a desk.",
+      "category": 1,
+      "vendor": 8,
+      "tags": [
+        8
+      ],
+      "price": "39.00",
+      "available": true,
+      "quantity": 50,
+      "created_at": "2024-09-09T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 9,
+    "fields": {
+      "name": "Linen Shirt",
+      "description": "Breathable long-sleeve linen shirt. Light warm-weather clothing.",
+      "category": 2,
+      "vendor": 9,
+      "tags": [
+        2,
+        5
+      ],
+      "price": "58.00",
+      "available": true,
+      "quantity": 35,
+      "created_at": "2024-10-10T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 10,
+    "fields": {
+      "name": "Merino Hoodie",
+      "description": "Lightweight merino wool hoodie. Warm travel clothing for cool days.",
+      "category": 2,
+      "vendor": 10,
+      "tags": [
+        3,
+        7
+      ],
+      "price": "118.00",
+      "available": true,
+      "quantity": 22,
+      "created_at": "2024-11-11T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 11,
+    "fields": {
+      "name": "Running Shorts",
+      "description": "Quick-dry running shorts with a zip pocket for trail and road workouts.",
+      "category": 2,
+      "vendor": 11,
+      "tags": [
+        1,
+        6
+      ],
+      "price": "34.00",
+      "available": true,
+      "quantity": 70,
+      "created_at": "2024-12-12T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 12,
+    "fields": {
+      "name": "Canvas Sneakers",
+      "description": "Low-profile canvas sneakers. Everyday shoes for walking around town.",
+      "category": 2,
+      "vendor": 12,
+      "tags": [
+        3,
+        8
+      ],
+      "price": "72.00",
+      "available": true,
+      "quantity": 45,
+      "created_at": "2024-01-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 13,
+    "fields": {
+      "name": "Rain Shell Jacket",
+      "description": "Packable waterproof rain shell jacket for outdoor weather.",
+      "category": 2,
+      "vendor": 13,
+      "tags": [
+        2,
+        6
+      ],
+      "price": "145.00",
+      "available": true,
+      "quantity": 18,
+      "created_at": "2024-02-14T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 14,
+    "fields": {
+      "name": "Wool Beanie",
+      "description": "Rib-knit merino wool beanie. Warm clothing for cold weather.",
+      "category": 2,
+      "vendor": 14,
+      "tags": [
+        8
+      ],
+      "price": "22.00",
+      "available": true,
+      "quantity": 90,
+      "created_at": "2024-03-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 15,
+    "fields": {
+      "name": "Trail Pants",
+      "description": "Stretch trail hiking pants with articulated knees for outdoor running and walking.",
+      "category": 2,
+      "vendor": 15,
+      "tags": [
+        6
+      ],
+      "price": "88.00",
+      "available": true,
+      "quantity": 28,
+      "created_at": "2024-04-16T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 16,
+    "fields": {
+      "name": "Redis Internals",
+      "description": "A practical guide to Redis Query Engine, search indexes, and JSON documents.",
+      "category": 3,
+      "vendor": 16,
+      "tags": [
+        2,
+        3
+      ],
+      "price": "42.00",
+      "available": true,
+      "quantity": 50,
+      "created_at": "2024-05-17T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 17,
+    "fields": {
+      "name": "Django at Scale",
+      "description": "Patterns for large Django applications and how teams run Django at scale.",
+      "category": 3,
+      "vendor": 17,
+      "tags": [
+        3
+      ],
+      "price": "38.50",
+      "available": true,
+      "quantity": 30,
+      "created_at": "2024-06-18T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 18,
+    "fields": {
+      "name": "The Search Handbook",
+      "description": "Full-text search design from first principles. Ranking, queries, and indexes.",
+      "category": 3,
+      "vendor": 18,
+      "tags": [
+        8
+      ],
+      "price": "29.99",
+      "available": true,
+      "quantity": 40,
+      "created_at": "2024-07-19T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 19,
+    "fields": {
+      "name": "Field Notes on Cooking",
+      "description": "Seasonal recipes for a small kitchen. Simple cooking at home.",
+      "category": 3,
+      "vendor": 19,
+      "tags": [
+        5
+      ],
+      "price": "24.00",
+      "available": true,
+      "quantity": 20,
+      "created_at": "2024-08-20T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 20,
+    "fields": {
+      "name": "Indexing Strategies",
+      "description": "How inverted search indexes and prefixes actually work in a query engine.",
+      "category": 3,
+      "vendor": 20,
+      "tags": [
+        2,
+        7
+      ],
+      "price": "36.00",
+      "available": true,
+      "quantity": 18,
+      "created_at": "2024-09-21T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 21,
+    "fields": {
+      "name": "Query Planning",
+      "description": "A short book on query planning, ranking, pagination, and search results.",
+      "category": 3,
+      "vendor": 21,
+      "tags": [
+        8
+      ],
+      "price": "21.00",
+      "available": true,
+      "quantity": 26,
+      "created_at": "2024-10-22T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 22,
+    "fields": {
+      "name": "Nested Documents",
+      "description": "Modeling nested search documents: vendors, tags, and categories in Redis.",
+      "category": 3,
+      "vendor": 22,
+      "tags": [
+        2
+      ],
+      "price": "27.50",
+      "available": true,
+      "quantity": 14,
+      "created_at": "2024-11-23T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 23,
+    "fields": {
+      "name": "Cast Iron Skillet",
+      "description": "Twelve-inch pre-seasoned cast iron skillet for kitchen cooking.",
+      "category": 4,
+      "vendor": 23,
+      "tags": [
+        3,
+        7
+      ],
+      "price": "64.00",
+      "available": true,
+      "quantity": 28,
+      "created_at": "2024-12-24T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 24,
+    "fields": {
+      "name": "Ceramic Pour-Over",
+      "description": "Two-cup ceramic pour-over coffee dripper for the kitchen.",
+      "category": 4,
+      "vendor": 24,
+      "tags": [
+        2
+      ],
+      "price": "36.00",
+      "available": true,
+      "quantity": 55,
+      "created_at": "2024-01-25T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 25,
+    "fields": {
+      "name": "Wool Throw Blanket",
+      "description": "Undyed merino wool throw blanket. Warm home textile for the sofa.",
+      "category": 4,
+      "vendor": 25,
+      "tags": [
+        5,
+        7
+      ],
+      "price": "98.00",
+      "available": true,
+      "quantity": 16,
+      "created_at": "2024-02-26T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 26,
+    "fields": {
+      "name": "Desk Lamp",
+      "description": "Adjustable LED desk lamp with warm and cool light modes.",
+      "category": 4,
+      "vendor": 26,
+      "tags": [
+        2,
+        8
+      ],
+      "price": "54.00",
+      "available": true,
+      "quantity": 33,
+      "created_at": "2024-03-27T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 27,
+    "fields": {
+      "name": "Oak Cutting Board",
+      "description": "End-grain oak cutting board for daily kitchen prep and cooking.",
+      "category": 4,
+      "vendor": 27,
+      "tags": [
+        7
+      ],
+      "price": "72.00",
+      "available": true,
+      "quantity": 19,
+      "created_at": "2024-04-01T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 28,
+    "fields": {
+      "name": "Stoneware Mug",
+      "description": "Twelve-ounce stoneware mug that keeps kitchen coffee warm.",
+      "category": 4,
+      "vendor": 28,
+      "tags": [
+        8
+      ],
+      "price": "18.00",
+      "available": true,
+      "quantity": 100,
+      "created_at": "2024-05-02T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 29,
+    "fields": {
+      "name": "Linen Napkins",
+      "description": "Set of four undyed linen napkins for the table.",
+      "category": 4,
+      "vendor": 29,
+      "tags": [
+        5
+      ],
+      "price": "28.00",
+      "available": true,
+      "quantity": 40,
+      "created_at": "2024-06-03T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 30,
+    "fields": {
+      "name": "Trail Running Shoes",
+      "description": "Cushioned trail running shoes for mixed outdoor terrain and road workouts.",
+      "category": 5,
+      "vendor": 30,
+      "tags": [
+        3,
+        6
+      ],
+      "price": "136.00",
+      "available": true,
+      "quantity": 24,
+      "created_at": "2024-07-04T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 31,
+    "fields": {
+      "name": "Yoga Mat",
+      "description": "Natural rubber yoga mat with alignment marks for studio workouts.",
+      "category": 5,
+      "vendor": 31,
+      "tags": [
+        1,
+        5
+      ],
+      "price": "48.00",
+      "available": true,
+      "quantity": 42,
+      "created_at": "2024-08-05T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 32,
+    "fields": {
+      "name": "Climbing Chalk",
+      "description": "Refillable climbing chalk bag for indoor walls.",
+      "category": 5,
+      "vendor": 32,
+      "tags": [
+        8
+      ],
+      "price": "16.00",
+      "available": true,
+      "quantity": 60,
+      "created_at": "2024-09-06T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 33,
+    "fields": {
+      "name": "Cycling Bottle",
+      "description": "Insulated cycling bottle that fits most cages on outdoor rides.",
+      "category": 5,
+      "vendor": 33,
+      "tags": [
+        6,
+        8
+      ],
+      "price": "19.00",
+      "available": true,
+      "quantity": 75,
+      "created_at": "2024-10-07T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 34,
+    "fields": {
+      "name": "Foam Roller",
+      "description": "High-density foam roller for recovery after running and workouts.",
+      "category": 5,
+      "vendor": 34,
+      "tags": [
+        1
+      ],
+      "price": "32.00",
+      "available": true,
+      "quantity": 38,
+      "created_at": "2024-11-08T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 35,
+    "fields": {
+      "name": "Jump Rope",
+      "description": "Weighted jump rope for short indoor workouts.",
+      "category": 5,
+      "vendor": 35,
+      "tags": [
+        8
+      ],
+      "price": "14.00",
+      "available": true,
+      "quantity": 80,
+      "created_at": "2024-12-09T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 36,
+    "fields": {
+      "name": "Compact Binoculars",
+      "description": "Pocket binoculars for day hikes and outdoor trail walks.",
+      "category": 5,
+      "vendor": 36,
+      "tags": [
+        6,
+        7
+      ],
+      "price": "86.00",
+      "available": true,
+      "quantity": 12,
+      "created_at": "2024-01-10T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 37,
+    "fields": {
+      "name": "Prototype Drone",
+      "description": "Internal wireless drone sample, not for sale.",
+      "category": 1,
+      "vendor": 37,
+      "tags": [
+        2,
+        7
+      ],
+      "price": "999.00",
+      "available": false,
+      "quantity": 1,
+      "created_at": "2024-02-11T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 38,
+    "fields": {
+      "name": "Discontinued Novel",
+      "description": "Out of print novel. No longer available.",
+      "category": 3,
+      "vendor": 38,
+      "tags": [
+        8,
+        9
+      ],
+      "price": "12.00",
+      "available": false,
+      "quantity": 0,
+      "created_at": "2024-03-12T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 39,
+    "fields": {
+      "name": "Warehouse Blanket",
+      "description": "Clearance wool blanket held in the warehouse.",
+      "category": 4,
+      "vendor": 39,
+      "tags": [
+        1,
+        9
+      ],
+      "price": "9.00",
+      "available": false,
+      "quantity": 3,
+      "created_at": "2024-04-13T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 40,
+    "fields": {
+      "name": "Last Season Cleats",
+      "description": "Previous season soccer cleats. Outdoor sports shoes, discontinued.",
+      "category": 5,
+      "vendor": 40,
+      "tags": [
+        9
+      ],
+      "price": "29.00",
+      "available": false,
+      "quantity": 2,
+      "created_at": "2024-05-14T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 41,
+    "fields": {
+      "logo": "",
+      "identifier": "9f3c1a2b-4d5e-5f60-a1b2-c3d4e5f60718",
+      "name": "Unassigned Goods",
+      "email": "hello@unassignedgoods.example",
+      "establishment_date": "2024-06-01"
+    }
+  },
+  {
+    "model": "core.vendor",
+    "pk": 42,
+    "fields": {
+      "logo": "",
+      "identifier": "1a2b3c4d-5e6f-5071-8293-a4b5c6d7e8f9",
+      "name": "Overflow Stock",
+      "email": "hello@overflowstock.example",
+      "establishment_date": "2024-06-02"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 41,
+    "fields": {
+      "name": "Uncategorized Gift Card",
+      "description": "Store credit with no department. Used to demo category__name__isnull.",
+      "category": null,
+      "vendor": 41,
+      "tags": [
+        8
+      ],
+      "price": "25.00",
+      "available": true,
+      "quantity": 50,
+      "created_at": "2024-06-15T12:00:00Z"
+    }
+  },
+  {
+    "model": "core.product",
+    "pk": 42,
+    "fields": {
+      "name": "Mystery Sample",
+      "description": "Unlabeled sample kit with no category so Geo is omitted.",
+      "category": null,
+      "vendor": 42,
+      "tags": [
+        2
+      ],
+      "price": "5.00",
+      "available": true,
+      "quantity": 7,
+      "created_at": "2024-06-16T12:00:00Z"
+    }
+  }
+]

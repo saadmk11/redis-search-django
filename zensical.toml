@@ -1,0 +1,130 @@
+[project]
+site_name = "redis-search-django"
+site_description = "Django integration with Redis Query Engine — documents, Django-style search, facets, and KNN."
+site_author = "Maksudul Haque"
+site_url = "https://saadmk11.github.io/redis-search-django/"
+copyright = "Copyright &copy; 2026 Maksudul Haque"
+docs_dir = "docs"
+dev_addr = "127.0.0.1:8002"
+repo_url = "https://github.com/saadmk11/redis-search-django"
+repo_name = "saadmk11/redis-search-django"
+edit_uri = "edit/1.0/docs/"
+extra_css = ["stylesheets/extra.css"]
+
+nav = [
+  { "Start" = [
+    { "Home" = "index.md" },
+    { "Getting started" = "getting-started.md" },
+    { "Demo app" = "demo.md" },
+  ] },
+  { "Guides" = [
+    { "Documents" = "documents.md" },
+    { "Query" = "query.md" },
+    { "Indexing" = "indexing.md" },
+    { "Signals" = "signals.md" },
+    { "Aggregations" = "aggregations.md" },
+    { "Vector search" = "vector.md" },
+    { "Async" = "async.md" },
+    { "Debug overlay" = "debug.md" },
+  ] },
+  { "Reference" = [
+    { "Settings" = "settings.md" },
+    { "Migrate from 0.1" = "migrate.md" },
+  ] },
+]
+
+[[project.extra.social]]
+icon = "fontawesome/brands/github"
+link = "https://github.com/saadmk11/redis-search-django"
+
+[[project.extra.social]]
+icon = "fontawesome/brands/python"
+link = "https://pypi.org/project/redis-search-django/"
+
+[project.theme]
+language = "en"
+features = [
+  "announce.dismiss",
+  "content.action.edit",
+  "content.code.annotate",
+  "content.code.copy",
+  "content.code.select",
+  "content.footnote.tooltips",
+  "content.tabs.link",
+  "content.tooltips",
+  "navigation.footer",
+  "navigation.indexes",
+  "navigation.instant",
+  "navigation.instant.prefetch",
+  "navigation.instant.progress",
+  "navigation.path",
+  "navigation.sections",
+  "navigation.tabs",
+  "navigation.tabs.sticky",
+  "navigation.top",
+  "navigation.tracking",
+  "search.highlight",
+  "search.share",
+  "search.suggest",
+  "toc.follow",
+]
+
+[project.theme.icon]
+logo = "lucide/search"
+repo = "fontawesome/brands/github"
+
+[project.theme.font]
+text = "Inter"
+code = "JetBrains Mono"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme)"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun-moon"
+toggle.name = "Switch to light mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: light)"
+scheme = "default"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/sun"
+toggle.name = "Switch to dark mode"
+
+[[project.theme.palette]]
+media = "(prefers-color-scheme: dark)"
+scheme = "slate"
+primary = "custom"
+accent = "custom"
+toggle.icon = "lucide/moon"
+toggle.name = "Switch to system preference"
+
+[project.markdown_extensions]
+abbr = {}
+admonition = {}
+attr_list = {}
+def_list = {}
+footnotes = {}
+md_in_html = {}
+toc.permalink = true
+pymdownx.betterem = {}
+pymdownx.caret = {}
+pymdownx.details = {}
+pymdownx.emoji.emoji_generator = "zensical.extensions.emoji.to_svg"
+pymdownx.emoji.emoji_index = "zensical.extensions.emoji.twemoji"
+pymdownx.highlight.anchor_linenums = true
+pymdownx.highlight.line_spans = "__span"
+pymdownx.highlight.pygments_lang_class = true
+pymdownx.inlinehilite = {}
+pymdownx.keys = {}
+pymdownx.magiclink = {}
+pymdownx.mark = {}
+pymdownx.smartsymbols = {}
+pymdownx.superfences.custom_fences = [
+  { name = "mermaid", class = "mermaid", format = "pymdownx.superfences.fence_code_format" },
+]
+pymdownx.tabbed.alternate_style = true
+pymdownx.tabbed.combine_header_slug = true
+pymdownx.tasklist.custom_checkbox = true
+pymdownx.tilde = {}

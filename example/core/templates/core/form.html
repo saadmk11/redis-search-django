@@ -1,0 +1,16 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ title }} — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+{% if hint %}<p class="muted">{{ hint }}</p>{% endif %}
+<form method="post" enctype="multipart/form-data" class="stack">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <p>
+        <button type="submit">Save</button>
+        <a href="javascript:history.back()">cancel</a>
+    </p>
+</form>
+{% endblock %}

@@ -1,0 +1,71 @@
+{% extends "core/base.html" %}
+
+{% block title %}Aggregations — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Aggregations</h1>
+<p class="muted">
+    <code>Aggregate().group_by(...)</code> with COUNT, AVG, MIN, MAX, SUM, TOLIST.
+    Lookups are Django paths (<code>vendor__name</code> → <code>@vendor_name</code>).
+    The same GET filters as search apply (leave them empty for the full index).
+</p>
+
+<form method="get">
+    <p>
+        query <input name="query" value="{{ query_data.query }}" />
+        prefix <input name="prefix" value="{{ query_data.prefix }}" />
+        min <input name="min_price" value="{{ query_data.min_price }}" />
+        max <input name="max_price" value="{{ query_data.max_price }}" />
+        <button type="submit">Filter aggregates</button>
+        <a href="{% url 'aggregations' %}">reset</a>
+    </p>
+    <p><code>raw()</code> = <code>{{ raw_query }}</code> PARAMS = <code>{{ raw_params }}</code></p>
+</form>
+
+<h2>By vendor</h2>
+<table>
+    <tr><th>vendor</th><th>count</th><th>avg</th><th>min</th><th>max</th><th>sum</th></tr>
+    {% for row in vendor_stats %}
+        <tr>
+            <td>{{ row.vendor_name }}</td>
+            <td>{{ row.count }}</td>
+            <td>{{ row.avg_price|floatformat:2 }}</td>
+            <td>{{ row.min_price|floatformat:2 }}</td>
+            <td>{{ row.max_price|floatformat:2 }}</td>
+            <td>{{ row.sum_price|floatformat:2 }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">no rows</td></tr>
+    {% endfor %}
+</table>
+
+<h2>By category (includes <code>tolist</code> of product names)</h2>
+<table>
+    <tr><th>category</th><th>count</th><th>avg</th><th>min</th><th>max</th><th>titles</th></tr>
+    {% for row in category_stats %}
+        <tr>
+            <td>{{ row.category_name }}</td>
+            <td>{{ row.count }}</td>
+            <td>{{ row.avg_price|floatformat:2 }}</td>
+            <td>{{ row.min_price|floatformat:2 }}</td>
+            <td>{{ row.max_price|floatformat:2 }}</td>
+            <td>{{ row.titles }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">no rows</td></tr>
+    {% endfor %}
+</table>
+
+<h2>By tag</h2>
+<table>
+    <tr><th>tag</th><th>count</th></tr>
+    {% for row in tag_stats %}
+        <tr>
+            <td>{{ row.tags_name }}</td>
+            <td>{{ row.count }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="2">no rows</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

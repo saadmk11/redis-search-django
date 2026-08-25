@@ -1,0 +1,33 @@
+{% extends "core/base.html" %}
+
+{% block title %}Vendors — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Vendors</h1>
+<p class="muted">A product needs a free vendor (OneToOne). Add a vendor before adding a product.</p>
+<p><a href="{% url 'vendor-create' %}">add vendor</a> · <a href="{% url 'catalog' %}">catalog</a></p>
+<table>
+    <tr><th>id</th><th>name</th><th>email</th><th>product</th><th></th></tr>
+    {% for vendor in object_list %}
+        <tr>
+            <td>{{ vendor.pk }}</td>
+            <td>{{ vendor.name }}</td>
+            <td>{{ vendor.email }}</td>
+            <td>
+                {% if vendor.product %}
+                    <a href="{% url 'product-detail' vendor.product.pk %}">{{ vendor.product }}</a>
+                {% else %}
+                    <span class="muted">free</span>
+                {% endif %}
+            </td>
+            <td>
+                <a href="{% url 'vendor-update' vendor.pk %}">edit</a>
+                ·
+                <a href="{% url 'vendor-delete' vendor.pk %}">delete</a>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="5">None yet.</td></tr>
+    {% endfor %}
+</table>
+{% endblock %}

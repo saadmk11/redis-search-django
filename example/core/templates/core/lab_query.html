@@ -1,0 +1,121 @@
+{% extends "core/base.html" %}
+{% load build_query_string %}
+
+{% block title %}Query lab — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Query lab</h1>
+<p class="muted">
+    Playground plus canned demos. Each card is a real call: the code, the
+    compiled <code>raw()</code> filter, and what Redis or the API returned.
+    A yellow <strong>expected reject</strong> badge means the library refused
+    the call on purpose (the page is fine). Red is only for an unexpected
+    failure. Names are stored UPPERCASE via <code>prepare_name</code>.
+</p>
+
+<form method="get">
+    <fieldset>
+        <legend>Playground</legend>
+        <p>
+            lookup
+            <select name="lookup">
+                <option value="">(none)</option>
+                {% for item in lookups %}
+                    <option value="{{ item }}" {% if request.GET.lookup == item %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+            field
+            <select name="field">
+                {% for item in fields %}
+                    <option value="{{ item }}" {% if request.GET.field == item or not request.GET.field and item == "name" %}selected{% endif %}>{{ item }}</option>
+                {% endfor %}
+            </select>
+            value
+            <input name="value" value="{{ request.GET.value }}" placeholder="REDIS, or 20,80 for range" size="32" />
+        </p>
+        <p>
+            <code>extra()</code> raw query
+            <input name="extra" value="{{ request.GET.extra }}" placeholder="@price:[10 30]" size="40" />
+            <span class="muted">Set lookup to <code>extra</code> (or leave lookup empty) to use this instead of filter().</span>
+        </p>
+        <p>
+            <button type="submit">Run</button>
+            <a href="{% url 'lab-query' %}">reset</a>
+        </p>
+        <p class="muted">
+            Try: lookup=<code>search</code> field=<code>name</code> value=<code>redis</code>
+            · <code>exact</code> <code>REDIS INTERNALS</code>
+            · <code>in</code> field=<code>tags__name</code> value=<code>sale,wireless</code>
+            · <code>isnull</code> field=<code>category</code> value=<code>true</code>
+            · <code>isnull</code> field=<code>department</code> value=<code>true</code>
+            · <code>range</code> field=<code>price</code> value=<code>20,80</code>
+        </p>
+    </fieldset>
+</form>
+
+{% if playground %}
+    <div class="demo">
+        <h3>{{ playground.title }}</h3>
+        <p>{{ playground.description }}</p>
+        <p><code>{{ playground.code }}</code></p>
+        {% if playground.error %}
+            <div class="outcome failed">
+                <strong>This run raised</strong>
+                <p class="muted">The page is still working. The API rejected or failed this call.</p>
+                <pre class="outcome-exc">{{ playground.error }}</pre>
+            </div>
+        {% else %}
+            <p><code>raw()</code> = <code>{{ playground.raw }}</code> PARAMS = <code>{{ playground.params }}</code></p>
+            <details open>
+                <summary>result</summary>
+                <pre>{{ playground.result|pretty_json }}</pre>
+            </details>
+            {% if playground.extra %}
+                <details>
+                    <summary>FT.EXPLAIN</summary>
+                    <pre>{{ playground.extra }}</pre>
+                </details>
+            {% endif %}
+        {% endif %}
+    </div>
+{% endif %}
+
+<h2>Canned demos</h2>
+<p class="muted">
+    Green = the call succeeded. Yellow = a documented rejection we run on
+    purpose so you can see the error type. Open <em>result</em> for hits.
+</p>
+{% for demo in demos %}
+    <div class="demo" id="{{ demo.id }}">
+        <h3>
+            {{ demo.title }}
+            {% if demo.expected and demo.error %}
+                <span class="badge expected">expected reject</span>
+            {% elif demo.error %}
+                <span class="badge failed">unexpected</span>
+            {% else %}
+                <span class="badge ok">ok</span>
+            {% endif %}
+        </h3>
+        <p>{{ demo.description }}</p>
+        <p><code>{{ demo.code }}</code></p>
+        {% if demo.raw %}<p><code>raw()</code> = <code>{{ demo.raw }}</code> PARAMS = <code>{{ demo.params }}</code></p>{% endif %}
+        {% if demo.error %}
+            <div class="outcome {% if demo.expected %}expected{% else %}failed{% endif %}">
+                {% if demo.expected %}
+                    <strong>Expected — the API stopped this call</strong>
+                    {% if demo.why %}<p>{{ demo.why }}</p>{% endif %}
+                {% else %}
+                    <strong>Unexpected — this demo should have succeeded</strong>
+                {% endif %}
+                <pre class="outcome-exc">{{ demo.error }}</pre>
+            </div>
+        {% else %}
+            <details>
+                <summary>result</summary>
+                <pre>{{ demo.result|pretty_json }}</pre>
+            </details>
+        {% endif %}
+    </div>
+{% endfor %}
+{% endblock %}

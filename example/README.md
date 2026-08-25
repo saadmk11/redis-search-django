@@ -1,33 +1,18 @@
-# Setup Example Project
+# Example project
 
-#### Clone the repository:
+A small catalog you can click through to try every public feature of
+redis-search-django. Plain HTML, no extra frontend.
 
-```bash
-git clone git@github.com:saadmk11/redis-search-django.git
-```
-
-#### Create a virtual environment and activate it:
+**Full walkthrough** (run, dummy data, what each page is, things to try):
+[Demo app](../docs/demo.md).
 
 ```bash
-virtualenv -p python3 venv
-source venv/bin/activate
+uv sync --group example
+docker compose up -d
+uv run python example/manage.py migrate
+uv run python example/manage.py loaddata catalog
+uv run python example/manage.py redisearch rebuild
+uv run python example/manage.py runserver
 ```
 
-#### Change to project directory:
-
-```bash
-cd redis-search-django/example
-```
-
-#### Install requirements:
-
-```bash
-pip install -r requirements.txt
-```
-
-#### run migrations and runserver:
-
-```bash
-python manage.py migrate
-python manage.py runserver       # http://127.0.0.1:8000/
-```
+Open http://127.0.0.1:8000/

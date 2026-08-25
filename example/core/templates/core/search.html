@@ -1,123 +1,220 @@
+{% extends "core/base.html" %}
 {% load build_query_string %}
 
-<!DOCTYPE html>
-<html>
-    <head>
-        <style>
-            table {
-                font-family: arial, sans-serif;
-                border-collapse: collapse;
-                width: 100%;
-            }
-            td,
-            th {
-                border: 1px solid #dddddd;
-                text-align: left;
-                padding: 8px;
-            }
-            tr:nth-child(even) {
-                background-color: #dddddd;
-            }
-            body {
-                width: 80%;
-                height: auto;
-                margin: 0 auto;
-                padding: 1px;
-            }
-        </style>
-    </head>
-    <body>
-        <h2>Django Redis Search Example</h2>
-        <form method="get">
-            <fieldset>
-                <legend><h4>Full Text Search</h4></legend>
-                <b>Search Query</b><br /><br />
-                <input type="text" name="query" placeholder="Search..." value="{{ request.GET.query }}" /><br /><br />
+{% block title %}Search — redis-search-django{% endblock %}
 
-                <b>Min Price</b><br /><br />
-                <input type="number" name="min_price" placeholder="Min Price" value="{{ request.GET.min_price }}" /><br /><br />
-                <b>Max Price</b><br /><br />
-                <input type="text" name="max_price" placeholder="Max Price" value="{{ request.GET.max_price }}" /><br /><br />
+{% block content %}
+<h1>Search{% if async_mode %} <span class="muted">(async aget)</span>{% endif %}</h1>
+<p class="muted">
+    {% if async_mode %}
+        Same filters as Search, evaluated with
+        <code>SearchListViewMixin.aget</code> / <code>afacets</code> /
+        <code>ato_queryset</code> / <code>aexplain</code>.
+    {% else %}
+        Keyword lookups, <code>objects.search()</code>, facets,
+        <code>order_by</code>, pagination, <code>to_queryset()</code>,
+        aggregates, <code>raw()</code>, <code>explain()</code>, highlight, KNN.
+    {% endif %}
+    Hidden products: {{ sqlite_hidden }} in SQLite,
+    {{ redis_count }} in Redis.
+</p>
 
-                <b>Sort</b><br /><br />
-                <input type="radio" id="sort-price-a" name="sort" value="price" {% if "price" in query_data.sort %}checked{% endif %}>
-                <label for="sort-price-a"> Price (Low to High)</label><br />
-                <input type="radio" id="sort-price-d" name="sort" value="-price" {% if "-price" in query_data.sort %}checked{% endif %}>
-                <label for="sort-price-d"> Price (High to Low)</label><br /><br />
-
-                <input type="radio" id="sort-name-a" name="sort" value="name" {% if "name" in query_data.sort %}checked{% endif %}>
-                <label for="sort-name-a"> Name (A-Z)</label><br />
-                <input type="radio" id="sort-name-d" name="sort" value="-name" {% if "-name" in query_data.sort %}checked{% endif %}>
-                <label for="sort-name-d"> Name (Z-A)</label><br /><br />
-
-                <b>Category</b><br /><br />
-                {% for category in facets.0 %}
-                <input type="checkbox" id="category-{{ forloop.counter }}" name="category" value="{{ category.category_name }}" {% if category.category_name in query_data.category %}checked{% endif %} />
-                <label for="category-{{ forloop.counter }}"> {{ category.category_name }} ({{ category.count }})</label><br />
-                {% endfor %}<br />
-
-                <b>Tags</b><br /><br />
-                {% for tag in facets.1 %}
-                <input type="checkbox" id="tag-{{ forloop.counter }}" name="tags" value="{{ tag.tags_name }}" {% if tag.tags_name in query_data.tags %}checked{% endif %} />
-                <label for="tag-{{ forloop.counter }}"> {{ tag.tags_name }} ({{ tag.count }})</label><br />
-                {% endfor %}<br />
-
-                <input type="submit" value="Search" />
-            </fieldset>
-        </form>
-
-        <h3>Search results ({{ object_list.count }})</h3>
-
-        <table>
-            <tr>
-                <th># ID</th>
-                <th>Product Name</th>
-                <th>Vendor</th>
-                <th>Price</th>
-                <th>Quantity</th>
-                <th>Category</th>
-                <th>Tags</th>
-                <th>Added At</th>
-            </tr>
-            {% for result in object_list %}
-                <tr>
-                    <td>{{ result.id }}</td>
-                    <td>{{ result.name }}</td>
-                    <td>{{ result.vendor.name }}</td>
-                    <td>{{ result.price }} $</td>
-                    <td>{{ result.quantity }}</td>
-                    <td>{{ result.category.name }}</td>
-                    <td>{% for tag in result.tags %} {{ tag.name }} {% if not forloop.last %}, {% endif %}{% endfor %}</td>
-                    <td>{{ result.created_at }}</td>
-                </tr>
+<form method="get">
+    <fieldset>
+        <legend>Filters</legend>
+        <p>
+            Keyword<br />
+            <input name="query" value="{{ query_data.query }}" />
+            <label>
+                <input type="radio" name="search_via" value="q" {% if query_data.search_via != "search" %}checked{% endif %} />
+                <code>Q(name__search) | Q(description__search)</code>
+            </label>
+            <label>
+                <input type="radio" name="search_via" value="search" {% if query_data.search_via == "search" %}checked{% endif %} />
+                <code>objects.search()</code> (Index.search_fields)
+            </label>
+        </p>
+        <p>
+            <code>name__exact</code> (stored UPPERCASE)
+            <input name="exact" value="{{ query_data.exact }}" placeholder="REDIS INTERNALS" />
+        </p>
+        <p>
+            Meaning <code>knn()</code> — Redis nearest neighbors<br />
+            <input name="knn" value="{{ query_data.knn }}" placeholder="wireless headphones" />
+            k <input name="k" type="number" min="1" max="50" value="{{ query_data.k }}" style="width:4em" />
+            <span class="muted">Filters above run first, then KNN ranks the rest.</span>
+        </p>
+        <p>
+            <code>name__startswith</code><br />
+            <input name="prefix" value="{{ query_data.prefix }}" />
+        </p>
+        <p>
+            Price <code>__gte</code> / <code>__lte</code><br />
+            <input name="min_price" type="number" step="0.01" value="{{ query_data.min_price }}" />
+            –
+            <input name="max_price" type="number" step="0.01" value="{{ query_data.max_price }}" />
+        </p>
+        <p>
+            Quantity <code>__range</code> / <code>__gte</code> / <code>__lte</code><br />
+            <input name="qty_min" type="number" value="{{ query_data.qty_min }}" style="width:5em" />
+            –
+            <input name="qty_max" type="number" value="{{ query_data.qty_max }}" style="width:5em" />
+        </p>
+        <p>
+            <code>available</code>
+            <label><input type="radio" name="available" value="" {% if not query_data.available %}checked{% endif %} /> any</label>
+            <label><input type="radio" name="available" value="true" {% if query_data.available == "true" %}checked{% endif %} /> true</label>
+            <label><input type="radio" name="available" value="false" {% if query_data.available == "false" %}checked{% endif %} /> false</label>
+            <span class="muted">false should be 0 — <code>should_index</code> already dropped those keys.</span>
+        </p>
+        <p>
+            <code>order_by</code><br />
+            <label><input type="radio" name="sort" value="" {% if not query_data.sort %}checked{% endif %} /> relevance</label>
+            <label><input type="radio" name="sort" value="price" {% if query_data.sort == "price" %}checked{% endif %} /> price</label>
+            <label><input type="radio" name="sort" value="-price" {% if query_data.sort == "-price" %}checked{% endif %} /> -price</label>
+            <label><input type="radio" name="sort" value="name" {% if query_data.sort == "name" %}checked{% endif %} /> name</label>
+            <label><input type="radio" name="sort" value="-name" {% if query_data.sort == "-name" %}checked{% endif %} /> -name</label>
+            <label><input type="radio" name="sort" value="quantity" {% if query_data.sort == "quantity" %}checked{% endif %} /> quantity</label>
+        </p>
+        <p>
+            <label>
+                <input type="checkbox" name="exclude_discontinued" value="1" {% if query_data.exclude_discontinued %}checked{% endif %} />
+                <code>exclude(tags__name="discontinued")</code>
+            </label>
+            <label>
+                <input type="checkbox" name="uncategorized" value="1" {% if query_data.uncategorized %}checked{% endif %} />
+                <code>department__isnull=True</code> (no category)
+            </label>
+            <label>
+                <input type="checkbox" name="redis_hits" value="1" {% if query_data.redis_hits %}checked{% endif %} />
+                keep Redis <code>SearchHit</code>s (skip <code>to_queryset()</code>)
+            </label>
+            <label>
+                <input type="checkbox" name="highlight" value="1" {% if query_data.highlight %}checked{% endif %} />
+                <code>highlight("name")</code>
+            </label>
+        </p>
+        <p>
+            Facet <code>category__name__in</code><br />
+            {% for row in facets.category__name %}
+                <label>
+                    <input type="checkbox" name="category" value="{{ row.value }}" {% if row.value in query_data.category %}checked{% endif %} />
+                    {{ row.value }} ({{ row.count }})
+                </label><br />
             {% empty %}
-                <td colspan="8">No results found.</td>
+                <span class="muted">no category facets</span>
             {% endfor %}
-        </table>
+        </p>
+        <p>
+            Facet <code>tags__name__in</code><br />
+            {% for row in facets.tags__name %}
+                <label>
+                    <input type="checkbox" name="tags" value="{{ row.value }}" {% if row.value in query_data.tags %}checked{% endif %} />
+                    {{ row.value }} ({{ row.count }})
+                </label><br />
+            {% empty %}
+                <span class="muted">no tag facets</span>
+            {% endfor %}
+        </p>
+        <p>
+            Facet <code>vendor__name__in</code><br />
+            {% for row in facets.vendor__name %}
+                <label>
+                    <input type="checkbox" name="vendor" value="{{ row.value }}" {% if row.value in query_data.vendor %}checked{% endif %} />
+                    {{ row.value }} ({{ row.count }})
+                </label><br />
+            {% empty %}
+                <span class="muted">no vendor facets</span>
+            {% endfor %}
+        </p>
+        <p>
+            <button type="submit">Apply</button>
+            <a href="{% url 'search' %}">reset</a>
+        </p>
+    </fieldset>
+</form>
 
-        {% if is_paginated %}
-            <ul class="pagination" style="display: block;">
-                {% if page_obj.has_previous %}
-                    <li style="display: inline;"><a href="?page={{ page_obj.previous_page_number }}{% query_string request %}">&laquo;</a></li>
+<h2>Price aggregate for this filter</h2>
+<table>
+    <tr>
+        <th>available</th><th>count</th><th>avg</th><th>min</th><th>max</th><th>sum</th>
+    </tr>
+    {% for row in price_stats %}
+        <tr>
+            <td>{{ row.available }}</td>
+            <td>{{ row.count }}</td>
+            <td>{{ row.avg_price|floatformat:2 }}</td>
+            <td>{{ row.min_price|floatformat:2 }}</td>
+            <td>{{ row.max_price|floatformat:2 }}</td>
+            <td>{{ row.sum_price|floatformat:2 }}</td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="6">no aggregate rows</td></tr>
+    {% endfor %}
+</table>
+
+<h2>Results ({{ paginator.count }}) — page {{ page_obj.number }} / {{ paginator.num_pages }}</h2>
+{% if knn_mode %}
+    <p class="muted">
+        Redis <code>SearchHit</code>s (not <code>to_queryset()</code>).
+        {% if query_data.knn %}Lower score is closer.{% endif %}
+        {% if query_data.highlight %}Highlighted markup is shown as HTML.{% endif %}
+    </p>
+{% endif %}
+<table>
+    <tr>
+        <th>id</th>
+        {% if knn_mode %}<th>score</th>{% endif %}
+        <th>name</th>
+        <th>vendor</th>
+        <th>price</th>
+        <th>qty</th>
+        <th>category</th>
+        <th>tags</th>
+    </tr>
+    {% for result in object_list %}
+        <tr>
+            <td><a href="{% url 'product-detail' result.pk %}">{{ result.pk }}</a></td>
+            {% if knn_mode %}<td>{{ result.score|floatformat:4 }}</td>{% endif %}
+            <td>{% if query_data.highlight %}{{ result.name|safe }}{% else %}{{ result.name }}{% endif %}</td>
+            <td>{{ result.vendor.name }}</td>
+            <td>{{ result.price }}</td>
+            <td>{{ result.quantity }}</td>
+            <td>{{ result.category.name }}</td>
+            <td>
+                {% if knn_mode %}
+                    {% for tag in result.tags %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                 {% else %}
-                    <li style="display: inline;" class="disabled"><span>&laquo;</span></li>
+                    {% for tag in result.tags.all %}{{ tag.name }}{% if not forloop.last %}, {% endif %}{% endfor %}
                 {% endif %}
-                {% for i in paginator.page_range %}
-                    {% if page_obj.number == i %}
-                        <li style="display: inline;" class="active">
-                            <span>{{ i }} <span class="sr-only">(current)</span></span>
-                        </li>
-                    {% else %}
-                        <li style="display: inline;"><a href="?page={{ i }}{% query_string request %}">{{ i }}</a></li>
-                    {% endif %}
-                {% endfor %}
-                {% if page_obj.has_next %}
-                    <li style="display: inline;"><a href="?page={{ page_obj.next_page_number }}{% query_string request %}">&raquo;</a></li>
-                {% else %}
-                    <li style="display: inline;" class="disabled"><span>&raquo;</span></li>
-                {% endif %}
-            </ul>
+            </td>
+        </tr>
+    {% empty %}
+        <tr><td colspan="{% if knn_mode %}8{% else %}7{% endif %}">No results.</td></tr>
+    {% endfor %}
+</table>
+
+{% if is_paginated %}
+    <p>
+        {% if page_obj.has_previous %}
+            <a href="?page={{ page_obj.previous_page_number }}{% query_string request %}">prev</a>
         {% endif %}
-    <br />
-    </body>
-</html>
+        {% for i in paginator.page_range %}
+            {% if page_obj.number == i %}
+                <strong>{{ i }}</strong>
+            {% else %}
+                <a href="?page={{ i }}{% query_string request %}">{{ i }}</a>
+            {% endif %}
+        {% endfor %}
+        {% if page_obj.has_next %}
+            <a href="?page={{ page_obj.next_page_number }}{% query_string request %}">next</a>
+        {% endif %}
+    </p>
+{% endif %}
+
+<h2>Compiled query</h2>
+<p><code>raw()</code> = <code>{{ raw_query }}</code></p>
+<p>PARAMS = <code>{{ raw_params }}</code></p>
+<h2>FT.EXPLAIN</h2>
+<pre>{{ explain }}</pre>
+{% endblock %}

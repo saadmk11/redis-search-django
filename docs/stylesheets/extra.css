@@ -1,0 +1,240 @@
+/* Redis brand. Primary and accent are both Redis red so nav, links, and
+   hover states stay on-theme. */
+
+:root {
+  --rsd-red: #dc382d;
+  --rsd-red-bright: #ff4438;
+  --rsd-red-deep: #a41e1c;
+  --rsd-red-soft: #fde8e6;
+  --rsd-teal: #0d9488;
+  --rsd-teal-bright: #2dd4bf;
+  --rsd-ink: #163341;
+  --rsd-midnight: #091a23;
+}
+
+:root > * {
+  --md-primary-fg-color: var(--rsd-red);
+  --md-primary-fg-color--light: var(--rsd-red-bright);
+  --md-primary-fg-color--dark: var(--rsd-red-deep);
+  --md-accent-fg-color: var(--rsd-red);
+  --md-accent-fg-color--transparent: color-mix(in srgb, var(--rsd-red) 12%, transparent);
+  --md-typeset-a-color: var(--rsd-red);
+}
+
+[data-md-color-scheme="slate"] {
+  --md-hue: 8;
+  --md-default-bg-color: #141110;
+  --md-default-bg-color--light: #1c1817;
+  --md-default-fg-color: hsla(12, 18%, 94%, 0.92);
+  --md-default-fg-color--light: hsla(12, 14%, 88%, 0.72);
+  --md-default-fg-color--lighter: hsla(12, 10%, 80%, 0.42);
+  --md-typeset-a-color: var(--rsd-red-bright);
+  --md-accent-fg-color: var(--rsd-red-bright);
+  --md-accent-fg-color--transparent: color-mix(in srgb, var(--rsd-red-bright) 16%, transparent);
+}
+
+.md-header {
+  background: linear-gradient(90deg, var(--rsd-midnight) 0%, #1b1211 55%, var(--rsd-red-deep) 100%);
+  color: #fff;
+}
+
+.md-tabs {
+  background: color-mix(in srgb, var(--rsd-midnight) 94%, var(--rsd-red) 6%);
+}
+
+[data-md-color-scheme="default"] .md-header,
+[data-md-color-scheme="default"] .md-tabs {
+  background: #fff;
+  color: var(--rsd-ink);
+  box-shadow: 0 1px 0 color-mix(in srgb, var(--rsd-red) 18%, transparent);
+}
+
+[data-md-color-scheme="default"] .md-header__title,
+[data-md-color-scheme="default"] .md-tabs__link {
+  color: var(--rsd-ink);
+}
+
+[data-md-color-scheme="default"] .md-tabs__link--active,
+[data-md-color-scheme="default"] .md-tabs__link:hover {
+  color: var(--rsd-red);
+}
+
+.md-nav--primary .md-nav__item .md-nav__link--active,
+.md-nav--primary .md-nav__item .md-nav__link--active code,
+.md-nav--secondary .md-nav__link--active,
+.md-nav--secondary .md-nav__link--active code {
+  color: var(--rsd-red);
+}
+
+.md-nav--primary .md-nav__item .md-nav__link--active {
+  background: color-mix(in srgb, var(--rsd-red) 12%, transparent);
+}
+
+.md-tabs__link--active {
+  color: var(--rsd-red);
+}
+
+.md-header .md-logo svg,
+.md-nav .md-logo svg {
+  color: var(--rsd-red-bright);
+}
+
+.md-header .md-logo svg,
+.md-header .md-logo svg path,
+.md-nav .md-logo svg,
+.md-nav .md-logo svg path {
+  fill: currentColor;
+}
+
+[data-md-color-scheme="default"] .md-header .md-logo svg,
+[data-md-color-scheme="default"] .md-nav .md-logo svg {
+  color: var(--rsd-red);
+}
+
+.md-typeset h1 {
+  font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.md-typeset h2 {
+  font-weight: 650;
+  border-bottom: 1px solid color-mix(in srgb, var(--rsd-red) 18%, transparent);
+  padding-bottom: 0.2em;
+}
+
+.md-typeset .md-button--primary {
+  background-color: var(--rsd-red);
+  border-color: var(--rsd-red);
+  color: #fff;
+}
+
+.md-typeset .md-button--primary:hover {
+  background-color: var(--rsd-red-deep);
+  border-color: var(--rsd-red-deep);
+}
+
+.md-typeset .md-button:not(.md-button--primary) {
+  border-color: color-mix(in srgb, var(--rsd-red) 45%, transparent);
+}
+
+.md-typeset .grid.cards > ul > li,
+.md-typeset .grid.cards > ol > li,
+.md-typeset .grid > .card {
+  border-color: color-mix(in srgb, var(--rsd-red) 16%, var(--md-default-fg-color--lightest));
+}
+
+.md-typeset .grid.cards > ul > li:hover,
+.md-typeset .grid.cards > ol > li:hover,
+.md-typeset .grid > .card:hover {
+  border-color: var(--rsd-red);
+  box-shadow: 0 8px 28px color-mix(in srgb, var(--rsd-red) 16%, transparent);
+}
+
+.md-typeset table:not([class]) th {
+  background: color-mix(in srgb, var(--rsd-red) 10%, var(--md-default-bg-color));
+  color: var(--md-typeset-color);
+  font-weight: 650;
+}
+
+.md-typeset .admonition.note,
+.md-typeset details.note {
+  border-color: var(--rsd-red);
+}
+
+.md-typeset .note > .admonition-title,
+.md-typeset .note > summary {
+  background-color: color-mix(in srgb, var(--rsd-red) 12%, transparent);
+}
+
+.md-typeset .admonition.tip,
+.md-typeset details.tip {
+  border-color: var(--rsd-teal);
+}
+
+.md-typeset .tip > .admonition-title,
+.md-typeset .tip > summary {
+  background-color: color-mix(in srgb, var(--rsd-teal) 14%, transparent);
+}
+
+.rsd-hero {
+  margin: 0 0 1.75rem;
+  padding: 1.85rem 1.7rem 1.55rem;
+  border-radius: 1.1rem;
+  background:
+    radial-gradient(900px 220px at 100% -10%, color-mix(in srgb, var(--rsd-red) 18%, transparent), transparent 58%),
+    linear-gradient(165deg, #fff8f6 0%, #fff 68%);
+  border: 1px solid color-mix(in srgb, var(--rsd-red) 20%, transparent);
+  color: var(--rsd-ink);
+}
+
+.rsd-hero h1 {
+  color: var(--rsd-ink);
+  margin-top: 0;
+  margin-bottom: 0.4rem;
+  border: 0;
+  letter-spacing: -0.03em;
+}
+
+.rsd-hero > p {
+  color: color-mix(in srgb, var(--rsd-ink) 78%, #fff);
+  font-size: 1.06rem;
+  max-width: 40rem;
+  margin-bottom: 0.85rem;
+}
+
+.rsd-hero .md-button {
+  margin-top: 0.15rem;
+}
+
+.rsd-hero .md-button--primary {
+  background: var(--rsd-red);
+  border-color: var(--rsd-red);
+}
+
+.rsd-hero .md-button--primary:hover {
+  background: var(--rsd-red-deep);
+  border-color: var(--rsd-red-deep);
+}
+
+[data-md-color-scheme="slate"] .rsd-hero {
+  background:
+    radial-gradient(1100px 240px at 100% -20%, color-mix(in srgb, var(--rsd-red) 26%, transparent), transparent 60%),
+    linear-gradient(160deg, #1c1413 0%, var(--rsd-midnight) 72%);
+  border-color: color-mix(in srgb, var(--rsd-red) 32%, transparent);
+  color: #f7f1ef;
+}
+
+[data-md-color-scheme="slate"] .rsd-hero h1 {
+  color: #fff;
+}
+
+[data-md-color-scheme="slate"] .rsd-hero > p {
+  color: color-mix(in srgb, #fff 80%, var(--rsd-red-soft));
+}
+
+.md-typeset .highlightspan,
+.md-typeset mark {
+  background: color-mix(in srgb, var(--rsd-red) 18%, transparent);
+}
+
+.md-search-result__article--document:before {
+  background-color: var(--rsd-red);
+}
+
+.md-top {
+  background-color: var(--rsd-red);
+}
+
+.md-typeset a:hover {
+  color: var(--md-accent-fg-color);
+}
+
+.md-typeset .highlight .gp {
+  color: var(--rsd-red);
+  user-select: none;
+}
+
+.md-typeset .highlight.language-console > .filename,
+.md-typeset .highlight.language-console > .filename::before {
+  display: none;
+}

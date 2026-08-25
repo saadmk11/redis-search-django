@@ -1,27 +1,155 @@
 [build-system]
-requires = ["setuptools"]
-build-backend = "setuptools.build_meta"
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "redis-search-django"
+version = "1.0.0"
+description = "Django integration with Redis Query Engine (RediSearch)"
+readme = "README.md"
+license = "MIT"
+license-files = ["LICENSE"]
+requires-python = ">=3.10"
+authors = [
+    { name = "Maksudul Haque", email = "saad.mk112@gmail.com" },
+]
+keywords = ["Django", "Redis", "Search", "RediSearch", "Vector"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Natural Language :: English",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Framework :: Django",
+    "Framework :: Django :: 5.2",
+    "Framework :: Django :: 6.0",
+    "Framework :: Django :: 6.1",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Programming Language :: Python :: 3.15",
+    "Programming Language :: Python :: Free Threading :: 3 - Stable",
+    "Typing :: Typed",
+]
+dependencies = [
+    "django>=5.2",
+    "redis>=5.0.0",
+    "typing-extensions>=4.12.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/saadmk11/redis-search-django"
+Repository = "https://github.com/saadmk11/redis-search-django"
+Changelog = "https://github.com/saadmk11/redis-search-django/blob/main/CHANGELOG.md"
+Issues = "https://github.com/saadmk11/redis-search-django/issues"
+
+[dependency-groups]
+dev = [
+    "coverage>=7.6",
+    "django-stubs>=5.2",
+    "mypy>=1.14",
+    "pre-commit>=4.0",
+    "ruff>=0.16",
+    "pytest>=8.3",
+    "pytest-asyncio>=0.25",
+    "pytest-cov>=6.0",
+    "pytest-django>=4.10",
+]
+docs = [
+    "zensical>=0.0.57",
+]
+example = [
+    "pillow>=11.0",
+]
+
+[tool.hatch.build.targets.wheel]
+packages = ["redis_search_django"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/redis_search_django",
+    "/tests",
+    "/CHANGELOG.md",
+    "/README.md",
+    "/LICENSE",
+    "/docs",
+    "/zensical.toml",
+]
 
 [tool.pytest.ini_options]
-addopts = "--ds=tests.django_settings --cov=redis_search_django --cov-report xml"
+addopts = "--ds=tests.django_settings --cov=redis_search_django --cov-report=term-missing --cov-report=xml --cov-fail-under=100"
+pythonpath = ["."]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+asyncio_default_fixture_loop_scope = "function"
+
+[tool.coverage.run]
+branch = true
+source = ["redis_search_django"]
+
+[tool.coverage.report]
+fail_under = 100
+show_missing = true
+exclude_also = [
+    "if TYPE_CHECKING:",
+]
+
+[tool.coverage.paths]
+source = ["redis_search_django", "tests"]
 
 [tool.mypy]
-mypy_path = "redis_search_django/"
-check_untyped_defs = true
+python_version = "3.10"
+strict = true
 warn_unreachable = true
 warn_unused_ignores = true
 show_error_codes = true
-disallow_any_generics = true
-disallow_incomplete_defs = true
-disallow_untyped_defs = true
-no_implicit_optional = true
+plugins = ["mypy_django_plugin.main"]
 
 [[tool.mypy.overrides]]
 module = "tests.*"
 allow_untyped_defs = true
 
-[tool.black]
-target-version = ['py310']
+[[tool.mypy.overrides]]
+module = "redis_search_django.*"
+# redis-py search/json helpers are untyped; we still type our public API.
+disable_error_code = ["no-untyped-call"]
 
-[tool.isort]
-profile = "black"
+[tool.django-stubs]
+django_settings_module = "tests.django_settings"
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+src = ["redis_search_django", "tests", "example"]
+
+[tool.ruff.lint]
+select = [
+    "B",   # flake8-bugbear
+    "C4",  # flake8-comprehensions
+    "E",   # pycodestyle errors
+    "F",   # pyflakes
+    "I",   # isort
+    "RUF", # ruff
+    "TID", # flake8-tidy-imports
+    "UP",  # pyupgrade
+    "W",   # pycodestyle warnings
+]
+ignore = [
+    "RUF012",  # mutable class attrs are the Django / Pydantic document pattern
+]
+
+[tool.ruff.lint.per-file-ignores]
+"example/core/migrations/*" = ["RUF"]
+"tests/*" = ["RUF012"]
+"redis_search_django/query/*" = ["TID252"]
+
+[tool.ruff.lint.isort]
+known-first-party = ["redis_search_django"]
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"

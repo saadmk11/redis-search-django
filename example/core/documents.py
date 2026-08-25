@@ -1,100 +1,117 @@
-from typing import List, Optional
+from __future__ import annotations
 
 from django.db import models
-from redis_om import Field
 
-from redis_search_django.documents import EmbeddedJsonDocument, JsonDocument
+from redis_search_django import fields
+from redis_search_django.documents import Document
 
+from .embeddings import DIMS, embed
 from .models import Category, Product, Tag, Vendor
 
+# Redis GEO is "lon,lat". One city per catalog category so /lab/ can show
+# the stored Geo field without adding columns to Product.
+CATEGORY_COORDS: dict[str, str] = {
+    "Electronics": "-74.0060,40.7128",  # New York
+    "Clothing": "2.3522,48.8566",  # Paris
+    "Books": "-0.1276,51.5074",  # London
+    "Home": "139.6917,35.6895",  # Tokyo
+    "Sports": "-104.9903,39.7392",  # Denver
+}
 
-class CategoryDocument(EmbeddedJsonDocument):
-    # name: str = Field(index=True, full_text_search=True)
-    # slug: str = Field(index=True)
-    custom_field: str = Field(index=True, full_text_search=True)
+
+class CategoryDocument(Document):
+    custom_field = fields.Text()
 
     class Django:
         model = Category
         fields = ["name", "slug"]
+        embedded = True
 
     @classmethod
-    def prepare_custom_field(cls, obj):
+    def prepare_custom_field(cls, obj: Category) -> str:
         return "CUSTOM FIELD VALUE"
 
 
-class TagDocument(EmbeddedJsonDocument):
-    # name: str = Field(index=True)
+class TagDocument(Document):
+    class Django:
+        model = Tag
+        fields = ["name"]
+        embedded = True
+
+
+class TagHashDocument(Document):
+    """Standalone HASH index of Tag. Nested is illegal on HASH; this is scalars only."""
 
     class Django:
         model = Tag
         fields = ["name"]
 
+    class Index:
+        storage = "hash"
+        name = "idx:core.tag.hash"
+        prefix = "rsd:core.tag.hash:"
 
-class VendorDocument(EmbeddedJsonDocument):
-    # logo: str = Field(index=True)
-    # identifier: str = Field(index=True)
-    # name: str = Field(index=True, full_text_search=True, sortable=True)
-    # email: str = Field(index=True, full_text_search=True, sortable=True)
-    # establishment_date: datetime.date = Field(
-    #     index=True, full_text_search=True, sortable=True
-    # )
 
+class VendorDocument(Document):
     class Django:
         model = Vendor
         fields = ["logo", "identifier", "name", "email", "establishment_date"]
+        embedded = True
 
     @classmethod
-    def prepare_logo(cls, obj):
+    def prepare_logo(cls, obj: Vendor) -> str:
         return obj.logo.url if obj.logo else ""
 
 
-class ProductDocument(JsonDocument):
-    # Fields can be defined manually or
-    # `Django.fields` can be used to define the Django Model fields automatically.
-
-    # name: str = Field(index=True, full_text_search=True, sortable=True)
-    # description: str = Field(index=True, full_text_search=True)
-    # price: Decimal = Field(index=True, sortable=True)
-    # created_at: Optional[datetime.date] = Field(index=True)
-    # quantity: Optional[int] = Field(index=True, sortable=True)
-    # available: int = Field(index=True, sortable=True)
-
-    # OnetoOneField
-    vendor: VendorDocument
-    # ForeignKey field
-    category: Optional[CategoryDocument]
-    # ManyToManyField
-    tags: List[TagDocument]
-
-    # class Meta:
-    #     model_key_prefix = "product"
-    #     global_key_prefix = "redis_search"
+class ProductDocument(Document):
+    vendor = fields.Object(VendorDocument)
+    category = fields.Object(CategoryDocument, required=False)
+    tags = fields.Nested(TagDocument)
+    sku = fields.Tag()
+    department = fields.Tag(index_missing=True)
+    location = fields.Geo()
+    embedding = fields.Vector(
+        dims=DIMS, algorithm="FLAT", distance="COSINE", embedder=embed
+    )
 
     class Django:
         model = Product
-        # Django Model fields can be added to the Document automatically.
         fields = ["name", "description", "price", "created_at", "quantity", "available"]
         prefetch_related_fields = ["tags"]
         select_related_fields = ["vendor", "category"]
-        related_models = {
-            Vendor: {
-                "related_name": "product",
-                "many": False,
-            },
-            Category: {
-                "related_name": "product_set",
-                "many": True,
-            },
-            Tag: {
-                "related_name": "product_set",
-                "many": True,
-            },
-        }
+
+    class Index:
+        search_fields = ["name", "description"]
+        language = "english"
 
     @classmethod
-    def get_queryset(cls) -> models.QuerySet:
+    def get_queryset(cls) -> models.QuerySet[Product]:
         return super().get_queryset().filter(available=True)
 
     @classmethod
-    def prepare_name(cls, obj):
+    def should_index(cls, instance: models.Model) -> bool:
+        return bool(getattr(instance, "available", True))
+
+    @classmethod
+    def prepare_name(cls, obj: Product) -> str:
         return obj.name.upper()
+
+    @classmethod
+    def prepare_sku(cls, obj: Product) -> str:
+        return f"SKU-{obj.pk:04d}"
+
+    @classmethod
+    def prepare_department(cls, obj: Product) -> str | None:
+        if obj.category_id is None:
+            return None
+        return obj.category.slug
+
+    @classmethod
+    def prepare_location(cls, obj: Product) -> str | None:
+        if obj.category_id is None:
+            return None
+        return CATEGORY_COORDS.get(obj.category.name)
+
+    @classmethod
+    def prepare_embedding(cls, obj: Product) -> str:
+        return f"{obj.name} {obj.description}"
