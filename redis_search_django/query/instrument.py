@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import inspect
 from collections.abc import Generator
-from contextlib import contextmanager
+from contextlib import contextmanager, nullcontext
 from contextvars import ContextVar, Token
 from dataclasses import dataclass, field
 from time import perf_counter
@@ -116,6 +116,7 @@ def _stacktraces_enabled() -> bool:
 _listener: ContextVar[QueryListener | None] = ContextVar(
     "redis_search_query_listener", default=None
 )
+NOOP_OBSERVE = nullcontext(None)
 
 
 @dataclass(slots=True)
@@ -191,6 +192,8 @@ def observe_write(
     params: dict[str, Any] | None = None,
 ) -> Any:
     """Time a JSON.SET / HSET / DEL when a listener is installed."""
+    if current_listener() is None:
+        return NOOP_OBSERVE
     meta = getattr(document_cls, "_meta", None)
     return observe(
         kind="delete" if command == "DEL" else "write",
@@ -205,6 +208,8 @@ def observe_write(
 
 def observe_pipeline(document_cls: Any, count: int) -> Any:
     """Time one pipeline ``execute()`` of index writes."""
+    if current_listener() is None:
+        return NOOP_OBSERVE
     meta = getattr(document_cls, "_meta", None)
     return observe(
         kind="write",

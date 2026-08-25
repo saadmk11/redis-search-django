@@ -610,6 +610,8 @@ def test_schema_weight_vector_and_flatten_lookup_error(document_class):
     name_field = Weighted._meta.fields["name"]
     assert name_field.weight == 2.0
     assert name_field.no_stem is True
+    assert flatten_lookup(Weighted, "name")[0] == "name"
+    assert flatten_lookup(Weighted, "name")[0] == "name"
     with pytest.raises(KeyError):
         flatten_lookup(Weighted, "missing")
     with pytest.raises(KeyError):

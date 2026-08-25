@@ -362,6 +362,15 @@ def test_vector_source_typo_raises(category_obj):
 
     assert omitted.prepare(NoAttr(), Typo) is None
 
+    short = Vector(dims=4, source="name")
+    short.bind("embedding", Typo)
+
+    class NumericName:
+        name = [1.0, 2.0]
+
+    with pytest.raises(ConfigurationError, match="dimensions"):
+        short.prepare(NumericName(), Typo)
+
 
 def test_vector_to_index_value_json_hash_and_blob():
     field = Vector(dims=2, type="FLOAT32")

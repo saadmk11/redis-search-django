@@ -20,6 +20,7 @@ from .lookups import Q, split_lookup
 MAX_QUERY_BYTES = 32 * 1024
 _PARAM_REF = re.compile(r"\$(?P<name>[A-Za-z][A-Za-z0-9_]*)")
 
+
 QueryParamValue = str | bytes | int | float
 QueryParams = dict[str, QueryParamValue]
 

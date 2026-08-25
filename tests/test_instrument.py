@@ -309,6 +309,22 @@ def _fake_search_client(total=0, docs=None, plan="INTERSECT {}", rows=None):
     return client, ft
 
 
+def test_observed_search_records_sort_label(document_class, monkeypatch):
+    from redis_search_django.query import queryset as qs_mod
+
+    doc = document_class("CatSortObs", Category, ["name"])
+    client, _ft = _fake_search_client(total=1)
+    monkeypatch.setattr(qs_mod, "get_redis_connection", lambda: client)
+    with capture_queries() as collector:
+        doc.objects.filter(name="X").count()
+        doc.objects.order_by("name").count()
+        doc.objects.order_by("-name").count()
+    sorts = [event.sort for event in collector.events if event.kind == "search"]
+    assert None in sorts
+    assert "name" in sorts
+    assert "-name" in sorts
+
+
 def test_search_and_explain_are_recorded(document_class, monkeypatch):
     from redis_search_django.query import queryset as qs_mod
 

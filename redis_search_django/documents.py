@@ -25,6 +25,9 @@ class RelatedConfig(TypedDict):
     many: bool
 
 
+_MANAGER_ATTR = "_rsd_manager"
+
+
 class DocumentOptions:
     """Resolved Django + Index options for a Document class."""
 
@@ -353,9 +356,14 @@ def _attach_exception_classes(cls: type[Document]) -> None:
 
 class _ObjectsDescriptor:
     def __get__(self, obj: Document | None, owner: type[Document]) -> DocumentManager:
+        cached = owner.__dict__.get(_MANAGER_ATTR)
+        if cached is not None:
+            return cached  # type: ignore[no-any-return]
         from .query.queryset import DocumentManager
 
-        return DocumentManager(owner)
+        manager = DocumentManager(owner)
+        setattr(owner, _MANAGER_ATTR, manager)
+        return manager
 
 
 class Document(metaclass=DocumentMeta):

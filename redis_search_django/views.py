@@ -49,7 +49,12 @@ class SearchListViewMixin(MultipleObjectTemplateResponseMixin, _MultipleObjectMi
         return self.document_class.objects.all()
 
     def get_queryset(self) -> Any:
-        return self.get_search_queryset()
+        cached = getattr(self, "_search_qs", None)
+        if cached is not None:
+            return cached
+        qs = self.get_search_queryset()
+        self._search_qs = qs
+        return qs
 
     def facets(self) -> FacetMap | None:
         return None
@@ -97,6 +102,47 @@ class SearchListViewMixin(MultipleObjectTemplateResponseMixin, _MultipleObjectMi
         ):
             context["object_list"] = object_list.to_queryset()
         return context
+
+    def paginate_queryset(
+        self, queryset: Any, page_size: int
+    ) -> tuple[Any, Any, Any, bool]:
+        """One FT.SEARCH for the page: reuse ``total`` instead of a second COUNT."""
+        if not hasattr(queryset, "_search"):
+            return super().paginate_queryset(queryset, page_size)
+        paginator = self.get_paginator(
+            queryset,
+            page_size,
+            orphans=self.get_paginate_orphans(),
+            allow_empty_first_page=self.get_allow_empty(),
+        )
+        page_number = self._page_number(paginator, queryset)
+        offset = max((page_number - 1) * page_size, 0)
+        result = queryset._search(offset=offset, limit=page_size)
+        queryset._result = result
+        queryset._total = result.total
+        paginator.count = result.total
+        try:
+            page_obj = paginator.page(page_number)
+        except InvalidPage as exc:
+            raise Http404(f"Invalid page ({page_number}): {exc}") from exc
+        sliced: Any = page_obj.object_list
+        sliced._result = result
+        sliced._total = result.total
+        sliced._compiled = queryset._compiled
+        return paginator, page_obj, sliced, page_obj.has_other_pages()
+
+    def _page_number(self, paginator: Any, queryset: Any) -> int:
+        page_kwarg = self.page_kwarg
+        raw_page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
+        if raw_page == "last":
+            paginator.count = queryset.count()
+            return int(paginator.num_pages)
+        try:
+            return int(raw_page)
+        except ValueError:
+            raise Http404(
+                'Page is not "last", nor can it be converted to an int.'
+            ) from None
 
     def get(self, request: HttpRequest, *args: str, **kwargs: str) -> HttpResponse:
         self.object_list = self.get_queryset()
@@ -158,24 +204,36 @@ class SearchListViewMixin(MultipleObjectTemplateResponseMixin, _MultipleObjectMi
             orphans=self.get_paginate_orphans(),
             allow_empty_first_page=self.get_allow_empty(),
         )
-        if hasattr(queryset, "acount"):
-            paginator.count = await queryset.acount()
         page_kwarg = self.page_kwarg
         raw_page = self.kwargs.get(page_kwarg) or self.request.GET.get(page_kwarg) or 1
-        try:
-            page_number = int(raw_page)
-        except ValueError:
-            if raw_page == "last":
-                page_number = paginator.num_pages
-            else:
+        if raw_page == "last":
+            if hasattr(queryset, "acount"):
+                paginator.count = await queryset.acount()
+            page_number = paginator.num_pages
+        else:
+            try:
+                page_number = int(raw_page)
+            except ValueError:
                 raise Http404(
                     'Page is not "last", nor can it be converted to an int.'
                 ) from None
+        if hasattr(queryset, "_asearch"):
+            offset = (page_number - 1) * page_size
+            result = await queryset._asearch(offset=max(offset, 0), limit=page_size)
+            queryset._result = result
+            queryset._total = result.total
+            paginator.count = result.total
         try:
             page_obj = paginator.page(page_number)
         except InvalidPage as exc:
             raise Http404(f"Invalid page ({page_number}): {exc}") from exc
-        object_list = await self._amaterialize(page_obj.object_list)
+        object_list: Any = page_obj.object_list
+        cached = getattr(queryset, "_result", None)
+        if hasattr(object_list, "_result") and cached is not None:
+            object_list._result = cached
+            object_list._total = getattr(queryset, "_total", None)
+            object_list._compiled = getattr(queryset, "_compiled", None)
+        object_list = await self._amaterialize(object_list)
         page_obj.object_list = object_list
         return paginator, page_obj, object_list, page_obj.has_other_pages()
 

@@ -11,7 +11,7 @@ from redis_search_django.indexer import Indexer
 from redis_search_django.query.queryset import DocumentQuerySet
 from redis_search_django.views import SearchListViewMixin
 
-from .helpers import alive_index
+from .helpers import alive_index, live_index
 from .models import Category
 
 
@@ -30,6 +30,58 @@ def test_get_search_queryset_defaults_to_all(document_class):
     qs = View().get_search_queryset()
     assert qs.document_cls is doc
     assert qs._none is False
+
+
+@pytest.mark.django_db
+def test_paginate_falls_back_for_orm_queryset(document_class):
+    Category.objects.create(name="orm-a")
+    Category.objects.create(name="orm-b")
+    doc = document_class("CategoryDocument", Category, ["name"])
+
+    class View(SearchListViewMixin, ListView):
+        document_class = doc
+        paginate_by = 1
+
+        def get_search_queryset(self):
+            return Category.objects.order_by("name")
+
+        def render_to_response(self, context, **response_kwargs):
+            assert context["paginator"].count == 2
+            return HttpResponse("ok")
+
+    assert View.as_view()(RequestFactory().get("/")).status_code == 200
+
+
+async def test_async_last_page_without_acount(document_class):
+    doc = document_class("CategoryDocument", Category, ["name"])
+
+    class View(SearchListViewMixin, ListView):
+        document_class = doc
+        paginate_by = 2
+        convert_to_queryset = False
+
+        async def get(self, request, *args, **kwargs):
+            return await self.aget(request, *args, **kwargs)
+
+        def get_search_queryset(self):
+            return ["a", "b", "c"]
+
+        def render_to_response(self, context, **response_kwargs):
+            assert context["page_obj"].number == 2
+            return HttpResponse("ok")
+
+    response = await View.as_view()(RequestFactory().get("/", {"page": "last"}))
+    assert response.status_code == 200
+
+
+def test_get_queryset_is_cached_for_the_request(document_class):
+    doc = document_class("CategoryDocument", Category, ["name"])
+
+    class View(SearchListViewMixin):
+        document_class = doc
+
+    view = View()
+    assert view.get_queryset() is view.get_queryset()
 
 
 def test_template_and_context_names(document_class):
@@ -110,6 +162,46 @@ async def test_async_get_renders_with_facets(document_class):
     response = await View.as_view()(request)
     assert response.status_code == 200
     assert response.content == b"ok"
+
+
+@pytest.mark.django_db(transaction=True)
+def test_sync_view_paginates_and_rejects_bad_pages(document_class):
+    names = ["sync-a", "sync-b", "sync-c", "sync-d", "sync-e"]
+    for name in names:
+        Category.objects.create(name=name)
+    doc = document_class("CategoryDocument", Category, ["name"])
+    captured: dict = {}
+
+    class View(SearchListViewMixin, ListView):
+        document_class = doc
+        paginate_by = 2
+        convert_to_queryset = False
+
+        def get_search_queryset(self):
+            return doc.objects.order_by("name")
+
+        def render_to_response(self, context, **response_kwargs):
+            captured.clear()
+            captured.update(context)
+            return HttpResponse("ok")
+
+    with live_index(doc):
+        Indexer().upsert_queryset(doc, Category.objects.all())
+        response = View.as_view()(RequestFactory().get("/"))
+        assert response.status_code == 200
+        assert captured["is_paginated"] is True
+        assert captured["paginator"].count == 5
+        assert [hit.name for hit in captured["object_list"]] == ["sync-a", "sync-b"]
+
+        last = View.as_view()(RequestFactory().get("/", {"page": "last"}))
+        assert last.status_code == 200
+        assert captured["page_obj"].number == 3
+        assert [hit.name for hit in captured["object_list"]] == ["sync-e"]
+
+        with pytest.raises(Http404, match='not "last"'):
+            View.as_view()(RequestFactory().get("/", {"page": "abc"}))
+        with pytest.raises(Http404, match="Invalid page"):
+            View.as_view()(RequestFactory().get("/", {"page": "99"}))
 
 
 @pytest.mark.django_db(transaction=True)
