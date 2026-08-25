@@ -37,7 +37,7 @@ classifiers = [
 ]
 dependencies = [
     "django>=5.2",
-    "redis>=5.0.0",
+    "redis>=8.1.0",
     "typing-extensions>=4.12.0",
 ]
 
