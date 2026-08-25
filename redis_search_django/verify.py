@@ -152,7 +152,8 @@ def _redis_versions(
 
 def _scan_keys(client: Redis, prefix: str) -> Iterator[str]:
     pattern = f"{prefix}*"
-    for key in client.scan_iter(match=pattern, count=setting_int("CHUNK_SIZE")):
+    for raw in client.scan_iter(match=pattern, count=setting_int("CHUNK_SIZE")):
+        key: object = raw
         if isinstance(key, bytes):
             key = key.decode()
         if not isinstance(key, str):

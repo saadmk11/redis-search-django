@@ -103,9 +103,9 @@ def slow_ms() -> float:
 
 def store_size() -> int:
     value = debug_setting("STORE_SIZE")
-    if isinstance(value, bool) or not isinstance(value, int) or value < 1:
-        return int(DEFAULTS["STORE_SIZE"])
-    return value
+    if isinstance(value, int) and not isinstance(value, bool) and value >= 1:
+        return value
+    return 25
 
 
 def insert_before() -> str:

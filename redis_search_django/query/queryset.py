@@ -22,7 +22,7 @@ from ..embeddings import as_floats, call_embed_query, is_vector, resolve_embedde
 from ..enums import QConnector, Storage
 from ..exceptions import ConfigurationError, NotSupportedError
 from ..fields import Nested, Object, Text, Vector
-from ..redis import AsyncRedis, Redis
+from ..redis import AsyncRedis, Redis, query_dialect, search_params, wait_redis
 from ..schema import flatten_lookup
 from ..targets import invalidate_targets
 from ..types import (
@@ -405,16 +405,18 @@ class DocumentQuerySet:
             return str(
                 get_redis_connection()
                 .ft(self.document_cls._meta.index_alias)
-                .explain(query, query_params=params)
+                .explain(query, query_params=search_params(params))
             )
 
     async def aexplain(self) -> str:
         query, params = self._explain_args()
         with self._observe("explain", query, params):
             return str(
-                await get_async_redis_connection()
-                .ft(self.document_cls._meta.index_alias)
-                .explain(query, query_params=params)
+                await wait_redis(
+                    get_async_redis_connection()
+                    .ft(self.document_cls._meta.index_alias)
+                    .explain(query, query_params=search_params(params))
+                )
             )
 
     def raw(self) -> tuple[str, QueryParams]:
@@ -628,16 +630,15 @@ class DocumentQuerySet:
 
     def _explain_args(self) -> tuple[Query, QueryParams | None]:
         query_str, params = self._filter_query()
-        return Query(query_str).dialect(self.document_cls._meta.dialect), params
+        return query_dialect(Query(query_str), self.document_cls._meta.dialect), params
 
     def _search_args(
         self, *, offset: int, limit: int, content: bool = True
     ) -> tuple[Query, QueryParams | None]:
         query_str, params = self._filter_query()
-        query = (
-            Query(query_str)
-            .paging(offset, limit)
-            .dialect(self.document_cls._meta.dialect)
+        query = query_dialect(
+            Query(query_str).paging(offset, limit),
+            self.document_cls._meta.dialect,
         )
         if self._sort:
             query = query.sort_by(self._sort, asc=not self._sort_desc)
@@ -708,7 +709,7 @@ class DocumentQuerySet:
             raw = (
                 get_redis_connection()
                 .ft(self.document_cls._meta.index_alias)
-                .search(query, query_params=params)
+                .search(query, query_params=search_params(params))
             )
             result = self._result_from_raw(raw)
             if obs is not None:
@@ -722,10 +723,10 @@ class DocumentQuerySet:
             return SearchResult(hits=[], total=0, document_cls=self.document_cls)
         query, params = self._search_args(offset=offset, limit=limit, content=content)
         with self._observe("search", query, params, offset=offset, limit=limit) as obs:
-            raw = await (
+            raw = await wait_redis(
                 get_async_redis_connection()
                 .ft(self.document_cls._meta.index_alias)
-                .search(query, query_params=params)
+                .search(query, query_params=search_params(params))
             )
             result = self._result_from_raw(raw)
             if obs is not None:

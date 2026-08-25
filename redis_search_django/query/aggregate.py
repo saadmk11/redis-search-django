@@ -7,7 +7,14 @@ from redis.commands.search.aggregation import Asc, Desc
 from ..client import get_async_redis_connection, get_redis_connection
 from ..documents import Document
 from ..enums import ReducerKind
-from ..redis import AggregateRequest, reducers
+from ..redis import (
+    AggregateRequest,
+    aggregate_dialect,
+    aggregate_query,
+    reducers,
+    search_params,
+    wait_redis,
+)
 from ..schema import flatten_lookup
 from ..types import IndexValue, RedisAggregateResult
 from .compiler import QueryCompiler, QueryParams, ensure_query_params
@@ -85,9 +92,9 @@ def _build_aggregate(
 
     if isinstance(spec, AggregateRequest):
         request = spec
-        query = spec._query
+        query = aggregate_query(spec)
     else:
-        request = AggregateRequest(query).dialect(document_cls._meta.dialect)
+        request = aggregate_dialect(AggregateRequest(query), document_cls._meta.dialect)
         if spec._group:
             alias, _field = flatten_lookup(document_cls, spec._group)
             reds = []
@@ -156,7 +163,7 @@ def run_aggregate(
         raw = (
             get_redis_connection()
             .ft(document_cls._meta.index_alias)
-            .aggregate(request, query_params=params)
+            .aggregate(request, query_params=search_params(params))
         )
         result: RedisAggregateResult = raw
         rows = _rows_from_aggregate(result)
@@ -177,13 +184,15 @@ async def arun_aggregate(
         kind="aggregate",
         document=document_cls.__name__,
         index=document_cls._meta.index_alias,
-        query=query_text(getattr(request, "_query", request)),
+        query=query_text(aggregate_query(request)),
         params=dict(params or {}),
         extra=queryset._extra is not None,
         dialect=document_cls._meta.dialect,
     ) as obs:
         search: Any = get_async_redis_connection().ft(document_cls._meta.index_alias)
-        raw = await search.aggregate(request, query_params=params)
+        raw = await wait_redis(
+            search.aggregate(request, query_params=search_params(params))
+        )
         result: RedisAggregateResult = raw
         rows = _rows_from_aggregate(result)
         if obs is not None:

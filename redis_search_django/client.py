@@ -8,7 +8,7 @@ from typing import Any
 from django.utils.module_loading import import_string
 
 from .conf import redis_search_setting
-from .redis import AsyncRedis, Redis
+from .redis import AsyncRedis, AsyncRedisClient, Redis, RedisClient
 from .types import (
     AsyncConnectionFactory,
     ConnectionFactory,
@@ -172,7 +172,7 @@ def _build_connection() -> Redis:
         else:
             raise TypeError("REDIS_SEARCH['CONNECTION'] must be a callable or path.")
         client = factory()
-        if not isinstance(client, Redis):
+        if not isinstance(client, RedisClient):
             raise TypeError(
                 "REDIS_SEARCH['CONNECTION'] must return redis_search_django.Redis"
             )
@@ -201,7 +201,7 @@ def _build_async_connection() -> AsyncRedis:
                 "REDIS_SEARCH['ASYNC_CONNECTION'] must be a callable or path."
             )
         client = factory()
-        if not isinstance(client, AsyncRedis):
+        if not isinstance(client, AsyncRedisClient):
             raise TypeError(
                 "REDIS_SEARCH['ASYNC_CONNECTION'] must return "
                 "redis_search_django.AsyncRedis"

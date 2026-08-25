@@ -21,7 +21,7 @@ from .enums import MigrateOutcome, Storage
 from .exceptions import ReindexInProgress
 from .index import IndexManager
 from .query.instrument import observe_pipeline, observe_write
-from .redis import Redis
+from .redis import Redis, hash_fields
 from .serializer import Serializer
 from .targets import generation_prefix, physical_name_for, write_prefixes
 from .types import DocumentPayload, HashMapping, IndexMeta
@@ -191,7 +191,7 @@ class Indexer:
                         json_set(pipe, key, payload, path=Path.root_path())
                     else:
                         assert mapping is not None
-                        pipe.hset(key, mapping=mapping)
+                        pipe.hset(key, mapping=hash_fields(mapping))
                 pending += len(keys)
             count += 1
             if pending >= chunk:
@@ -241,7 +241,7 @@ class Indexer:
                         document_cls, payload
                     )
                     for key in keys:
-                        pipe.hset(key, mapping=mapping)
+                        pipe.hset(key, mapping=hash_fields(mapping))
                 pending += len(keys)
             count += 1
             if pending >= chunk:

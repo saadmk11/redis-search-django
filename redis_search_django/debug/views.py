@@ -3,7 +3,7 @@ from __future__ import annotations
 from django.http import HttpRequest, HttpResponse, JsonResponse
 
 from redis_search_django.client import get_redis_connection
-from redis_search_django.redis import Query
+from redis_search_django.redis import Query, query_dialect, search_params
 
 from .conf import EXPLAIN_PARAM, resolve_show_toolbar
 from .store import store
@@ -31,8 +31,8 @@ def explain_response(request: HttpRequest) -> HttpResponse:
             get_redis_connection()
             .ft(event.index)
             .explain(
-                Query(event.query).dialect(event.dialect),
-                query_params=event.params or None,
+                query_dialect(Query(event.query), event.dialect),
+                query_params=search_params(event.params or None),
             )
         )
     except Exception as exc:
