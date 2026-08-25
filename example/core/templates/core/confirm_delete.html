@@ -1,0 +1,14 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ title }} — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>{{ title }}</h1>
+{% if hint %}<p class="muted">{{ hint }}</p>{% endif %}
+<p>Delete <strong>{{ object }}</strong>?</p>
+<form method="post">
+    {% csrf_token %}
+    <button type="submit">Delete</button>
+    <a href="javascript:history.back()">cancel</a>
+</form>
+{% endblock %}

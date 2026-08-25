@@ -1,0 +1,44 @@
+{% if stats.rows %}
+<div class="rsd-summary">
+    <span><strong>{{ stats.count }}</strong> registered index{{ stats.count|pluralize }}</span>
+</div>
+<div class="rsd-index-list">
+    {% for row in stats.rows %}
+    <article class="rsd-card">
+        <header>
+            <h3>{{ row.name }}</h3>
+            <span class="rsd-kind rsd-kind-index">{{ row.storage }}</span>
+        </header>
+        <dl class="rsd-dl">
+            <div><dt>Label</dt><dd>{{ row.label }}</dd></div>
+            <div><dt>Model</dt><dd>{{ row.model }}</dd></div>
+            <div><dt>Alias</dt><dd><code>{{ row.alias }}</code></dd></div>
+            <div><dt>Prefix</dt><dd><code>{{ row.prefix }}</code></dd></div>
+            <div><dt>Dialect</dt><dd>{{ row.dialect }}</dd></div>
+            <div><dt>Auto-index</dt><dd>{{ row.auto_index }}</dd></div>
+        </dl>
+        {% if row.fields %}
+        <div class="rsd-table-wrap">
+        <table class="rsd-table">
+            <thead>
+                <tr><th>Field</th><th>Type</th><th>Alias</th><th></th></tr>
+            </thead>
+            <tbody>
+                {% for field in row.fields %}
+                <tr>
+                    <td>{{ field.name }}</td>
+                    <td>{{ field.type }}</td>
+                    <td><code>{{ field.alias }}</code></td>
+                    <td>{% if field.sortable %}sortable{% endif %}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        </div>
+        {% endif %}
+    </article>
+    {% endfor %}
+</div>
+{% else %}
+<p class="rsd-empty">No Documents are registered yet.</p>
+{% endif %}

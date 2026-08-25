@@ -1,0 +1,70 @@
+{% if stats.rows %}
+<div class="rsd-summary">
+    <span><strong>{{ stats.count }}</strong> this request</span>
+    <span><strong>{{ stats.total_ms|floatformat:2 }} ms</strong></span>
+    {% for item in stats.kinds %}
+        <span class="rsd-chip">{{ item.count }} {{ item.kind }}</span>
+    {% endfor %}
+    {% if stats.slow %}<span class="rsd-pill rsd-pill-warn">{{ stats.slow }} slow</span>{% endif %}
+    {% if stats.duplicates %}<span class="rsd-pill rsd-pill-dup">{{ stats.duplicates }} repeated</span>{% endif %}
+    {% if stats.carried %}<span class="rsd-pill rsd-pill-dup">{{ stats.carried }} from previous request</span>{% endif %}
+</div>
+<ol class="rsd-queries">
+    {% for row in stats.rows %}
+    <li class="rsd-query{% if row.slow %} is-slow{% endif %}{% if row.error %} is-error{% endif %}" data-rsd-query>
+        <button type="button" class="rsd-query-head" data-rsd-toggle aria-expanded="false">
+            <span class="rsd-num">{{ forloop.counter }}</span>
+            <span class="rsd-kind rsd-kind-{{ row.kind }}">{{ row.kind }}</span>
+            <span class="rsd-query-meta">
+                <strong>{{ row.document }}</strong>
+                <span class="rsd-muted">{{ row.index_name }}</span>
+            </span>
+            <span class="rsd-chips">
+                {% if row.total != None %}<span class="rsd-chip">{{ row.total }} hit{{ row.total|pluralize }}</span>{% endif %}
+                {% if row.knn %}<span class="rsd-chip">knn</span>{% endif %}
+                {% if row.extra %}<span class="rsd-chip">extra</span>{% endif %}
+                {% if row.duplicate %}<span class="rsd-chip rsd-chip-dup">repeated</span>{% endif %}
+                {% if row.carried %}<span class="rsd-chip rsd-chip-dup">previous request</span>{% endif %}
+                {% if row.error %}<span class="rsd-chip rsd-chip-err">error</span>{% endif %}
+            </span>
+            <span class="rsd-time{% if row.slow %} is-slow{% endif %}">{{ row.duration_ms|floatformat:2 }}<small> ms</small></span>
+        </button>
+        <div class="rsd-query-body" hidden>
+            <div class="rsd-block">
+                <div class="rsd-label">Command</div>
+                <pre class="rsd-code">{{ row.command }}</pre>
+            </div>
+            {% if row.sort or row.offset != None or row.key or row.origin or row.location %}
+            <dl class="rsd-facts">
+                {% if row.sort %}<div><dt>Sort</dt><dd>{{ row.sort }}</dd></div>{% endif %}
+                {% if row.offset != None %}<div><dt>Window</dt><dd>offset {{ row.offset }}, limit {{ row.limit }}</dd></div>{% endif %}
+                {% if row.key %}<div><dt>Key</dt><dd><code>{{ row.key }}</code></dd></div>{% endif %}
+                {% if row.origin %}<div><dt>From</dt><dd>{{ row.origin }}</dd></div>{% endif %}
+                {% if row.location %}<div><dt>Called from</dt><dd><code>{{ row.location }}</code></dd></div>{% endif %}
+            </dl>
+            {% endif %}
+            {% if row.stack %}
+            <details class="rsd-details">
+                <summary>Stack ({{ row.stack|length }})</summary>
+                <pre class="rsd-code">{% for frame in row.stack %}{{ frame }}
+{% endfor %}</pre>
+            </details>
+            {% endif %}
+            {% if row.params %}
+            <details class="rsd-details">
+                <summary>Parameters</summary>
+                <pre class="rsd-code">{{ row.params_json }}</pre>
+            </details>
+            {% endif %}
+            {% if row.error %}<p class="rsd-error">{{ row.error }}</p>{% endif %}
+            {% if row.explainable and row.explain_url %}
+            <button type="button" class="rsd-btn" data-rsd-explain="{{ row.explain_url }}">Explain this query</button>
+            <pre class="rsd-code rsd-explain" hidden></pre>
+            {% endif %}
+        </div>
+    </li>
+    {% endfor %}
+</ol>
+{% else %}
+<p class="rsd-empty">No Redis Query Engine calls on this request.</p>
+{% endif %}

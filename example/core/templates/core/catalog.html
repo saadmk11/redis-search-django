@@ -1,0 +1,53 @@
+{% extends "core/base.html" %}
+
+{% block title %}Catalog — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Catalog</h1>
+<p class="muted">
+    Create, edit, and delete rows here. <code>AUTO_INDEX</code> writes Redis
+    on save and delete via <code>apply_index_action</code>. Related edits
+    (category, vendor, tags) reindex parent products. Setting
+    <code>available=False</code> drops the Redis key (<code>should_index</code>).
+    Tag saves also write the HASH index (<code>TagHashDocument</code>).
+</p>
+
+<table>
+    <tr><th>Model</th><th>SQLite</th><th></th></tr>
+    <tr>
+        <td>Products</td>
+        <td>{{ product_count }} ({{ hidden_count }} hidden)</td>
+        <td><a href="{% url 'product-list' %}">list</a> · <a href="{% url 'product-create' %}">add</a></td>
+    </tr>
+    <tr>
+        <td>Categories</td>
+        <td>{{ category_count }}</td>
+        <td><a href="{% url 'category-list' %}">list</a> · <a href="{% url 'category-create' %}">add</a></td>
+    </tr>
+    <tr>
+        <td>Tags</td>
+        <td>{{ tag_count }}</td>
+        <td><a href="{% url 'tag-list' %}">list</a> · <a href="{% url 'tag-create' %}">add</a></td>
+    </tr>
+    <tr>
+        <td>Vendors</td>
+        <td>{{ vendor_count }}</td>
+        <td><a href="{% url 'vendor-list' %}">list</a> · <a href="{% url 'vendor-create' %}">add</a></td>
+    </tr>
+    <tr>
+        <td>Uncategorized products</td>
+        <td>{{ uncategorized_count }}</td>
+        <td><code>department__isnull</code> on Search / Query lab</td>
+    </tr>
+    <tr>
+        <td>Redis JSON (ProductDocument)</td>
+        <td>{{ redis_count }} documents</td>
+        <td>available products only</td>
+    </tr>
+    <tr>
+        <td>Redis HASH (TagHashDocument)</td>
+        <td>{{ hash_count }} documents</td>
+        <td><a href="{% url 'lab-query' %}#hash">Query lab HASH demo</a></td>
+    </tr>
+</table>
+{% endblock %}

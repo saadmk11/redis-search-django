@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>{% block title %}redis-search-django example{% endblock %}</title>
+    <style>
+        body { font-family: sans-serif; margin: 1rem auto; max-width: 1100px; }
+        table { border-collapse: collapse; width: 100%; margin: 0.5rem 0 1rem; }
+        th, td { border: 1px solid #ccc; padding: 4px 6px; text-align: left; vertical-align: top; }
+        nav { margin-bottom: 1rem; }
+        fieldset { margin-bottom: 1rem; }
+        pre { background: #f4f4f4; padding: 0.5rem; overflow: auto; }
+        .muted { color: #555; }
+        .messages { list-style: none; padding: 0; }
+        .messages li { background: #eef8ee; border: 1px solid #9c9; padding: 0.4rem 0.6rem; margin-bottom: 0.5rem; }
+        form.stack p { margin: 0.4rem 0; }
+        form.stack label { display: block; font-weight: bold; }
+        ul { margin: 0.2rem 0; }
+        .lab-nav { font-size: 0.95rem; }
+        .demo { border: 1px solid #ddd; padding: 0.6rem 0.8rem; margin: 0.8rem 0; }
+        .demo h3 { margin: 0 0 0.3rem; }
+        .error { color: #a30; }
+        .badge {
+            display: inline-block;
+            font-size: 0.75rem;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            vertical-align: middle;
+        }
+        .badge.ok { background: #e5f4ea; color: #146c36; }
+        .badge.expected { background: #fff3cc; color: #6b5200; }
+        .badge.failed { background: #fde8e8; color: #8a1f1f; }
+        .outcome {
+            border-radius: 8px;
+            padding: 0.55rem 0.75rem;
+            margin: 0.5rem 0 0.2rem;
+        }
+        .outcome.expected { background: #fff8e4; border: 1px solid #e6c56e; color: #4a3b0c; }
+        .outcome.failed { background: #fdecec; border: 1px solid #e8a0a0; color: #6b1c1c; }
+        .outcome strong { display: block; margin-bottom: 0.25rem; }
+        .outcome-exc { background: transparent; margin: 0.35rem 0 0; padding: 0; }
+        details { margin: 0.4rem 0; }
+        code.block { display: block; white-space: pre-wrap; background: #f4f4f4; padding: 0.4rem; }
+        .ok { color: #163; }
+    </style>
+</head>
+<body>
+    <nav>
+        <strong>redis-search-django example</strong>
+        —
+        <a href="{% url 'search' %}">Search</a>
+        |
+        <a href="{% url 'aggregations' %}">Aggregations</a>
+        |
+        <a href="{% url 'async-stats' %}">Async</a>
+        |
+        <a href="{% url 'async-search' %}">Async search</a>
+        |
+        <a href="{% url 'lab' %}">Lab</a>
+        |
+        <a href="{% url 'catalog' %}">Catalog</a>
+        |
+        <a href="/admin/">Admin</a>
+        <div class="lab-nav muted">
+            Lab:
+            <a href="{% url 'lab' %}">matrix</a>
+            ·
+            <a href="{% url 'lab-query' %}">query</a>
+            ·
+            <a href="{% url 'lab-index' %}">index</a>
+            ·
+            search pages: Redis overlay is the bottom-left <strong>RSD</strong> pill
+        </div>
+    </nav>
+    {% if messages %}
+        <ul class="messages">
+            {% for message in messages %}
+                <li>{{ message }}</li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+    {% block content %}{% endblock %}
+</body>
+</html>

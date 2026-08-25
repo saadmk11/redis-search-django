@@ -1,0 +1,56 @@
+{% extends "core/base.html" %}
+
+{% block title %}{{ object.name }} — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>{{ object.name }}</h1>
+<p>
+    <a href="{% url 'product-update' object.pk %}">edit</a>
+    ·
+    <a href="{% url 'product-delete' object.pk %}">delete</a>
+    ·
+    <a href="{% url 'search' %}?knn={{ object.name|urlencode }}">knn this name</a>
+    ·
+    <a href="{% url 'product-list' %}">all products</a>
+</p>
+
+<h2>Django</h2>
+<table>
+    <tr><th>pk</th><td>{{ object.pk }}</td></tr>
+    <tr><th>available</th><td>{{ object.available }}</td></tr>
+    <tr><th>price</th><td>{{ object.price }}</td></tr>
+    <tr><th>quantity</th><td>{{ object.quantity }}</td></tr>
+    <tr><th>category</th><td>{{ object.category }}</td></tr>
+    <tr><th>vendor</th><td>{{ object.vendor }}</td></tr>
+    <tr><th>tags</th><td>{% for tag in object.tags.all %}{{ tag }}{% if not forloop.last %}, {% endif %}{% endfor %}</td></tr>
+    <tr><th>description</th><td>{{ object.description }}</td></tr>
+</table>
+
+<h2>Redis <code>ProductDocument.objects.get(pk=)</code></h2>
+<p class="muted">Key <code>{{ redis_key }}</code></p>
+{% if redis_hit %}
+    <table>
+        <tr><th>pk</th><td>{{ redis_hit.pk }}</td></tr>
+        <tr><th>name</th><td>{{ redis_hit.name }} <span class="muted">(prepare_name uppercases)</span></td></tr>
+        <tr><th>sku</th><td>{{ redis_hit.sku }} <span class="muted">(prepare_sku)</span></td></tr>
+        <tr><th>department</th><td>{{ redis_hit.department }} <span class="muted">(category slug; omitted if none)</span></td></tr>
+        <tr><th>location</th><td>{{ redis_hit.location }} <span class="muted">(GEO lon,lat from category)</span></td></tr>
+        <tr><th>available</th><td>{{ redis_hit.available }}</td></tr>
+        <tr><th>price</th><td>{{ redis_hit.price }}</td></tr>
+        <tr><th>vendor</th><td>{{ redis_hit.vendor.name }}</td></tr>
+        <tr><th>category</th><td>{{ redis_hit.category.name }}</td></tr>
+        <tr><th>custom_field</th><td>{{ redis_hit.category.custom_field }}</td></tr>
+        <tr><th>embedding</th><td>{{ embedding_dims }} floats (no extra Django field)</td></tr>
+    </table>
+    <details open>
+        <summary>SearchHit payload (vectors elided)</summary>
+        <pre>{{ redis_payload_json }}</pre>
+    </details>
+{% else %}
+    <p class="muted">
+        No Redis document. The product is hidden by <code>should_index</code>
+        (<code>available=False</code>) or has not been populated yet.
+        Re-upsert from <a href="{% url 'lab-index' %}">Index lab</a>.
+    </p>
+{% endif %}
+{% endblock %}

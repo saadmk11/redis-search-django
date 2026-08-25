@@ -1,6 +1,7 @@
 import uuid
 
 from django.db import models
+from django.urls import reverse
 
 
 class Tag(models.Model):
@@ -9,6 +10,9 @@ class Tag(models.Model):
     def __str__(self) -> str:
         return self.name
 
+    def get_absolute_url(self) -> str:
+        return reverse("tag-update", args=[self.pk])
+
 
 class Category(models.Model):
     name = models.CharField(max_length=30)
@@ -16,6 +20,9 @@ class Category(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def get_absolute_url(self) -> str:
+        return reverse("category-update", args=[self.pk])
 
 
 class Vendor(models.Model):
@@ -27,6 +34,9 @@ class Vendor(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def get_absolute_url(self) -> str:
+        return reverse("vendor-update", args=[self.pk])
 
 
 class Product(models.Model):
@@ -44,3 +54,6 @@ class Product(models.Model):
 
     def __str__(self) -> str:
         return self.name
+
+    def get_absolute_url(self) -> str:
+        return reverse("product-detail", args=[self.pk])

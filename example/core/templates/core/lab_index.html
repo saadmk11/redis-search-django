@@ -1,0 +1,102 @@
+{% extends "core/base.html" %}
+
+{% block title %}Index lab — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Index lab</h1>
+<p class="muted">
+    <code>document_registry</code>, <code>IndexManager</code>
+    (exists / info / check / drift), resolved <code>REDIS_SEARCH</code>,
+    and <code>apply_index_action</code>. Embedded documents are not registered
+    (no Redis index of their own).
+</p>
+
+<h2>Registered documents</h2>
+{% for item in registered %}
+    <div class="demo">
+        <h3>{{ item.class_name }} <span class="muted">{{ item.label }}</span></h3>
+        <table>
+            <tr><th>model</th><td>{{ item.model }}</td></tr>
+            <tr><th>alias</th><td><code>{{ item.alias }}</code></td></tr>
+            <tr><th>prefix</th><td><code>{{ item.prefix }}</code></td></tr>
+            <tr><th>storage</th><td>{{ item.storage }}</td></tr>
+            <tr><th>auto_index</th><td>{{ item.auto_index }}</td></tr>
+            <tr><th>language</th><td>{{ item.language }}</td></tr>
+            <tr><th>search_fields</th><td>{{ item.search_fields }}</td></tr>
+            <tr><th>related_map</th><td>{{ item.related|join:", " }}</td></tr>
+            <tr><th>exists()</th><td>{{ item.exists }}</td></tr>
+            <tr><th>check()</th><td>{{ item.check }} <span class="muted">0 = in sync</span></td></tr>
+            <tr><th>drift()</th><td>{{ item.drift }}</td></tr>
+            <tr><th>fingerprint</th><td><code>{{ item.fingerprint }}</code></td></tr>
+            <tr><th>schema fields</th><td>{{ item.field_types|join:", " }}</td></tr>
+        </table>
+        <details>
+            <summary>FT.INFO (selected keys)</summary>
+            <pre>{{ item.info_json }}</pre>
+        </details>
+    </div>
+{% endfor %}
+
+<h2>Embedded (not registered)</h2>
+<table>
+    <tr><th>class</th><th>model</th></tr>
+    {% for item in embedded %}
+        <tr><td>{{ item.class_name }}</td><td>{{ item.model }}</td></tr>
+    {% endfor %}
+</table>
+<p class="muted">
+    Field classes in this package:
+    {% for name in field_classes %}<code>{{ name }}</code>{% if not forloop.last %}, {% endif %}{% endfor %}.
+</p>
+
+<h2>apply_index_action</h2>
+<p>
+    Same function the signal processor (and a Celery task) calls.
+    <code>upsert</code> rewrites one Redis key from the Django row.
+    <code>delete</code> drops the Redis key only.
+    <code>reindex_related</code> needs a related model label (e.g. <code>core.Category</code>)
+    and that row’s pk.
+</p>
+<form method="post">
+    {% csrf_token %}
+    <p>
+        action
+        <select name="action">
+            {% for item in index_actions %}
+                <option value="{{ item }}">{{ item }}</option>
+            {% endfor %}
+        </select>
+        document
+        <input name="document" value="core.ProductDocument" size="28" />
+        pk
+        <input name="pk" value="1" size="6" />
+        related
+        <input name="related" value="core.Category" size="18" />
+        <button type="submit">Run</button>
+    </p>
+</form>
+
+<h2>REDIS_SEARCH</h2>
+<p class="muted">
+    <code>redis_search_setting(key)</code> returns the user value if the key
+    is present, otherwise the package default. Typed accessors
+    (<code>setting_str</code> / <code>setting_int</code> / <code>setting_bool</code>)
+    raise if the type is wrong.
+</p>
+<table>
+    <tr><th>key</th><th>resolved</th><th>default</th><th></th></tr>
+    {% for row in settings_rows %}
+        <tr>
+            <td><code>{{ row.key }}</code></td>
+            <td><code>{{ row.value }}</code></td>
+            <td><code>{{ row.default }}</code></td>
+            <td>{% if row.overridden %}overridden{% endif %}</td>
+        </tr>
+    {% endfor %}
+</table>
+
+<h2>Management command (CLI)</h2>
+<pre>uv run python example/manage.py redisearch create|update|populate|rebuild|drop|info|check
+uv run python example/manage.py redisearch info --models core.Product
+uv run python example/manage.py redisearch check</pre>
+{% endblock %}

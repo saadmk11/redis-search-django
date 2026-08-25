@@ -1,0 +1,56 @@
+{% extends "core/base.html" %}
+
+{% block title %}Lab — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Feature lab</h1>
+<p>
+    Manual test surface for every public API. Each row says what the feature
+    is, how to exercise it, and which page runs it live with debug output.
+</p>
+<p class="muted">
+    Redis JSON documents: {{ redis_count }}
+    · HASH tags: {{ hash_count }}
+    · SQLite products: {{ product_count }}
+    ({{ hidden_count }} hidden, {{ uncategorized }} uncategorized).
+    Hidden rows stay in SQLite; <code>should_index</code> drops them from Redis.
+    After changing documents.py run
+    <code>uv run python example/manage.py redisearch rebuild</code>.
+</p>
+<p>
+    <a href="{% url 'lab-query' %}">Query playground</a>
+    ·
+    <a href="{% url 'lab-index' %}">Index / registry / settings</a>
+    ·
+    <a href="{% url 'async-search' %}">Async SearchListView</a>
+</p>
+
+{% for group, items in groups.items %}
+    <h2>{{ group }}</h2>
+    <table>
+        <tr>
+            <th>Feature</th>
+            <th>What it is</th>
+            <th>How to test</th>
+            <th>Page</th>
+        </tr>
+        {% for item in items %}
+            <tr>
+                <td><strong>{{ item.name }}</strong></td>
+                <td>{{ item.description }}</td>
+                <td>{{ item.how }}</td>
+                <td><a href="{% url item.url_name %}">{{ item.page }}</a></td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endfor %}
+
+<h2>Suggested walkthrough</h2>
+<ol>
+    <li>Search <code>redis</code>, then Meaning <code>wireless headphones</code>.</li>
+    <li>Query lab: run <code>department__isnull</code> and the HASH / Geo rows.</li>
+    <li>Index lab: confirm <code>check=0</code>, then POST <code>upsert</code> for pk 1.</li>
+    <li>Catalog: set a product <code>available=False</code> and watch Redis count drop.</li>
+    <li>Async: same filters, then Async search for the mixin.</li>
+</ol>
+{% endblock %}

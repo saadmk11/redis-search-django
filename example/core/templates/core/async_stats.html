@@ -1,0 +1,112 @@
+{% extends "core/base.html" %}
+
+{% block title %}Async — redis-search-django{% endblock %}
+
+{% block content %}
+<h1>Async evaluation</h1>
+<p class="muted">
+    Same GET filters as search. Filter construction is sync; evaluation uses
+    <code>redis.asyncio</code>. List page:
+    <a href="{% url 'async-search' %}">/async/search/</a>
+    (<code>SearchListViewMixin.aget</code>).
+</p>
+
+<form method="get">
+    <p>
+        query <input name="query" value="{{ query_data.query }}" />
+        knn <input name="knn" value="{{ query_data.knn }}" />
+        k <input name="k" type="number" min="1" value="{{ query_data.k }}" style="width:4em" />
+        min <input name="min_price" value="{{ query_data.min_price }}" />
+        max <input name="max_price" value="{{ query_data.max_price }}" />
+        get_by_pk <input name="pk" value="{{ request.GET.pk|default:'1' }}" style="width:4em" />
+        <button type="submit">Evaluate</button>
+        <a href="{% url 'async-stats' %}">reset</a>
+    </p>
+</form>
+
+<table>
+    <tr><th>await objects.acount()</th><td>{{ redis_count }}</td></tr>
+    <tr><th>await filtered.acount()</th><td>{{ filtered_count }}</td></tr>
+    <tr><th>await filtered.aexists()</th><td>{{ exists }}</td></tr>
+    <tr>
+        <th>await filtered.afirst()</th>
+        <td>
+            {% if first %}
+                <a href="{% url 'product-detail' first.pk %}">{{ first.name }}</a>
+                {% if first.score != None %} (score {{ first.score|floatformat:4 }}){% endif %}
+            {% else %}
+                none
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>await ordered.alast()</th>
+        <td>
+            {% if last_error %}
+                <div class="outcome failed">
+                    <strong>This call raised</strong>
+                    <pre class="outcome-exc">{{ last_error }}</pre>
+                </div>
+            {% elif last %}
+                <a href="{% url 'product-detail' last.pk %}">{{ last.name }}</a>
+            {% else %}
+                none
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>await objects.aget_by_pk(pk)</th>
+        <td>
+            {% if by_pk_error %}
+                <div class="outcome failed">
+                    <strong>This call raised</strong>
+                    <pre class="outcome-exc">{{ by_pk_error }}</pre>
+                </div>
+            {% elif by_pk %}
+                <a href="{% url 'product-detail' by_pk.pk %}">{{ by_pk.name }}</a>
+                sku={{ by_pk.sku }} location={{ by_pk.location }}
+            {% endif %}
+        </td>
+    </tr>
+    <tr>
+        <th>await filtered[:5].ato_queryset()</th>
+        <td>
+            {% if django_page_error %}
+                <div class="outcome failed">
+                    <strong>This call raised</strong>
+                    <pre class="outcome-exc">{{ django_page_error }}</pre>
+                </div>
+            {% else %}
+                {% for row in django_page %}
+                    <a href="{% url 'product-detail' row.pk %}">{{ row.name }}</a>{% if not forloop.last %}, {% endif %}
+                {% empty %}none{% endfor %}
+            {% endif %}
+        </td>
+    </tr>
+</table>
+
+<h2>await afacets("category__name")</h2>
+<table>
+    <tr><th>value</th><th>count</th></tr>
+    {% for row in facets.category__name %}
+        <tr><td>{{ row.value }}</td><td>{{ row.count }}</td></tr>
+    {% empty %}
+        <tr><td colspan="2">no facets</td></tr>
+    {% endfor %}
+</table>
+
+<h2>await aaggregate(group_by available)</h2>
+<table>
+    <tr><th>available</th><th>count</th></tr>
+    {% for row in aggregate_rows %}
+        <tr><td>{{ row.available }}</td><td>{{ row.count }}</td></tr>
+    {% empty %}
+        <tr><td colspan="2">no rows</td></tr>
+    {% endfor %}
+</table>
+
+<p><code>raw()</code> = <code>{{ raw_query }}</code></p>
+<p>PARAMS = <code>{{ raw_params }}</code></p>
+<h2>await aexplain()</h2>
+<pre>{{ explain }}</pre>
+{% endblock %}
