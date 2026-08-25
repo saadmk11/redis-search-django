@@ -16,6 +16,7 @@ nav = [
     { "Home" = "index.md" },
     { "Getting started" = "getting-started.md" },
     { "Demo app" = "demo.md" },
+    { "Contribute" = "contributing.md" },
   ] },
   { "Guides" = [
     { "Documents" = "documents.md" },

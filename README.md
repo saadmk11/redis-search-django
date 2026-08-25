@@ -73,7 +73,7 @@ docker compose up -d
 uv run pytest
 ```
 
-Test matrix: `uvx --with tox-uv tox`. Docs: `uv sync --group docs && uv run zensical serve` (http://127.0.0.1:8002).
+Test matrix: `uvx --with tox-uv tox`. Docs: `uv sync --group docs && uv run zensical serve` (http://127.0.0.1:8002). How to run checks and open a PR: **[Contribute](docs/contributing.md)**.
 
 ## License
 
