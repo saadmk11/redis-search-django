@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v7
 
       - name: Run Changelog CI
-        uses: saadmk11/changelog-ci@v1.1.1
+        uses: saadmk11/changelog-ci@v1.2.0

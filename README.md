@@ -37,7 +37,7 @@ Django stays the source of truth. You declare a `Document`, signals (or `redisea
 | --- | --- |
 | Python | 3.10 – 3.15 (free-threaded from 3.15t) |
 | Django | 5.2, 6.0, 6.1 |
-| redis-py | ≥ 5.0 (installed with the package) |
+| redis-py | ≥ 8.0 (installed with the package) |
 | Redis | 8+ with Query Engine and RedisJSON |
 
 ## Quick start
