@@ -40,8 +40,6 @@ Django stays the source of truth. You declare a `Document`, signals (or `redisea
 | redis-py | ≥ 5.0 (installed with the package) |
 | Redis | 8+ with Query Engine and RedisJSON |
 
-Import Redis types from `redis_search_django` (`Redis`, `Query`, `AggregateRequest`, exceptions). Do not `import redis` in application code.
-
 ## Quick start
 
 ```bash
