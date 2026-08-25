@@ -162,4 +162,4 @@ How to run linters, the matrix, and open a PR: [Contribute](https://saadmk11.git
 
 ## License
 
-[MIT](LICENSE) © Maksudul Haque
+[MIT](LICENSE)
