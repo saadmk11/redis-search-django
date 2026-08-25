@@ -73,9 +73,54 @@ def test_knn_requires_vector_field(document_class):
 def test_raw_and_search_clone(document_class):
     doc = document_class("CatRaw", Category, ["name"])
     qs = doc.objects.search("trail")
+    doc.objects.search("trail")
     query, params = qs.raw()
+    again, again_params = qs.raw()
     assert "name" in query
     assert params
+    assert again == query
+    assert again_params == params
+
+
+def test_exists_reuses_count_total(document_class):
+    doc = document_class("CatCountThenExists", Category, ["name"])
+    qs = doc.objects.filter(name="x")
+    qs._total = 3
+    assert qs.count() == 3
+    assert qs.exists() is True
+
+
+def test_count_and_exists_reuse_evaluated_result(document_class):
+    doc = document_class("CatCachedCount", Category, ["name"])
+    qs = doc.objects.filter(name="x")
+    qs._result = SearchResult(hits=[SearchHit(pk="1")], total=7, document_cls=doc)
+    assert qs.count() == 7
+    assert qs.exists() is True
+    assert len(qs) == 7
+    empty = doc.objects.filter(name="y")
+    empty._result = SearchResult(hits=[], total=0, document_cls=doc)
+    assert empty.count() == 0
+    assert empty.exists() is False
+
+
+async def test_aexists_reuses_acount_total(document_class):
+    doc = document_class("CatACountThenExists", Category, ["name"])
+    qs = doc.objects.filter(name="x")
+    qs._total = 2
+    assert await qs.acount() == 2
+    assert await qs.aexists() is True
+
+
+async def test_acount_and_aexists_reuse_evaluated_result(document_class):
+    doc = document_class("CatCachedACount", Category, ["name"])
+    qs = doc.objects.filter(name="x")
+    qs._result = SearchResult(hits=[SearchHit(pk="1")], total=4, document_cls=doc)
+    assert await qs.acount() == 4
+    assert await qs.aexists() is True
+    empty = doc.objects.filter(name="y")
+    empty._result = SearchResult(hits=[], total=0, document_cls=doc)
+    assert await empty.acount() == 0
+    assert await empty.aexists() is False
 
 
 def test_param_names_and_ensure_query_params():

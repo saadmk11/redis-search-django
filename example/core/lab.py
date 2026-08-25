@@ -34,7 +34,7 @@ from .documents import (
     VendorDocument,
 )
 from .models import Product
-from .views import catalog_queryset, query_data
+from .views import _unfiltered, catalog_queryset, query_data
 
 
 @dataclass
@@ -847,12 +847,12 @@ class AsyncSearchView(SearchDebugMixin, SearchListViewMixin, ListView):
         return await self.aget(request, *args, **kwargs)
 
     async def afacets(self) -> dict[str, list[dict[str, Any]]]:
-        return await self.get_search_queryset().afacets(
+        return await self.get_queryset().afacets(
             "category__name", "tags__name", "vendor__name"
         )
 
     async def aget_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        qs = self.get_search_queryset()
+        qs = self.get_queryset()
         raw_query, raw_params = qs.raw()
         data = query_data(self.request)
         context = await super().aget_context_data(query_data=data, **kwargs)
@@ -863,7 +863,11 @@ class AsyncSearchView(SearchDebugMixin, SearchListViewMixin, ListView):
         context["explain"] = await qs.aexplain()
         hidden = Product.objects.filter(available=False)
         context["sqlite_hidden"] = await hidden.acount()
-        context["redis_count"] = await ProductDocument.objects.all().acount()
+        paginator = context.get("paginator")
+        if _unfiltered(qs) and paginator is not None:
+            context["redis_count"] = paginator.count
+        else:
+            context["redis_count"] = await ProductDocument.objects.all().acount()
         context["price_stats"] = await qs.aaggregate(
             Aggregate()
             .group_by("available")

@@ -173,6 +173,8 @@ class Indexer:
         resolved = (
             tuple(prefixes) if prefixes is not None else write_prefixes(document_cls)
         )
+        json_path = Path.root_path()
+        store_json = document_cls._meta.storage is Storage.JSON
         # QuerySet.iterator() ignores prefetch_related (N+1 on Nested fields).
         for instance in _iter_records(qs, chunk):
             prepared = self._prepare_write(document_cls, instance)
@@ -183,15 +185,15 @@ class Indexer:
                 pending += len(keys)
             else:
                 _pk, payload = prepared
-                mapping = None
-                if document_cls._meta.storage is not Storage.JSON:
-                    mapping = self.serializer.flatten_hash(document_cls, payload)
-                for key in keys:
-                    if document_cls._meta.storage is Storage.JSON:
-                        json_set(pipe, key, payload, path=Path.root_path())
-                    else:
-                        assert mapping is not None
-                        pipe.hset(key, mapping=hash_fields(mapping))
+                if store_json:
+                    for key in keys:
+                        json_set(pipe, key, payload, path=json_path)
+                else:
+                    mapping = hash_fields(
+                        self.serializer.flatten_hash(document_cls, payload)
+                    )
+                    for key in keys:
+                        pipe.hset(key, mapping=mapping)
                 pending += len(keys)
             count += 1
             if pending >= chunk:
@@ -224,6 +226,8 @@ class Indexer:
         resolved = (
             tuple(prefixes) if prefixes is not None else write_prefixes(document_cls)
         )
+        json_path = Path.root_path()
+        store_json = document_cls._meta.storage is Storage.JSON
         async for instance in _aiter_records(qs, chunk):
             prepared = await sync_to_async(self._prepare_write)(document_cls, instance)
             keys = self._keys_for(document_cls, instance.pk, resolved)
@@ -233,15 +237,17 @@ class Indexer:
                 pending += len(keys)
             else:
                 _pk, payload = prepared
-                if document_cls._meta.storage is Storage.JSON:
+                if store_json:
                     for key in keys:
-                        json_set(pipe, key, payload, path=Path.root_path())
+                        json_set(pipe, key, payload, path=json_path)
                 else:
-                    mapping = await sync_to_async(self.serializer.flatten_hash)(
-                        document_cls, payload
+                    mapping = hash_fields(
+                        await sync_to_async(self.serializer.flatten_hash)(
+                            document_cls, payload
+                        )
                     )
                     for key in keys:
-                        pipe.hset(key, mapping=hash_fields(mapping))
+                        pipe.hset(key, mapping=mapping)
                 pending += len(keys)
             count += 1
             if pending >= chunk:

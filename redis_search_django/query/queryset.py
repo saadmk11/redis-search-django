@@ -40,7 +40,7 @@ from ..types import (
 )
 from ..versioning import public_payload
 from .compiler import QueryCompiler, QueryParams, ensure_query_params
-from .instrument import observe, query_text
+from .instrument import NOOP_OBSERVE, current_listener, observe, query_text
 from .knn import KnnClause, validate_score_name, wrap_knn_query
 from .lookups import Q
 from .results import SearchHit, SearchResult
@@ -57,6 +57,9 @@ class _SearchPage(Protocol):
 
 
 logger = logging.getLogger("redis_search_django")
+_TEXT_LOOKUPS_ATTR = "_rsd_text_lookups"
+_HASH_VECTORS_ATTR = "_rsd_hash_vectors"
+_HAS_VECTOR_ATTR = "_rsd_has_vector"
 
 
 class DocumentManager:
@@ -225,6 +228,8 @@ class DocumentQuerySet:
         self._none = False
         self._knn: KnnClause | None = None
         self._result: SearchResult | None = None
+        self._compiled: tuple[str, QueryParams | None] | None = None
+        self._total: int | None = None
 
     def _clone(self) -> DocumentQuerySet:
         clone = DocumentQuerySet(self.document_cls)
@@ -426,18 +431,36 @@ class DocumentQuerySet:
     def count(self) -> int:
         if self._knn is not None:
             return len(self._search(offset=0, limit=self._knn.k, content=False).hits)
-        return self._search(offset=0, limit=0).total
+        if self._result is not None:
+            return self._result.total
+        if self._total is not None:
+            return self._total
+        self._total = self._search(offset=0, limit=0).total
+        return self._total
 
     async def acount(self) -> int:
         if self._knn is not None:
             result = await self._asearch(offset=0, limit=self._knn.k, content=False)
             return len(result.hits)
-        return (await self._asearch(offset=0, limit=0)).total
+        if self._result is not None:
+            return self._result.total
+        if self._total is not None:
+            return self._total
+        self._total = (await self._asearch(offset=0, limit=0)).total
+        return self._total
 
     def exists(self) -> bool:
+        if self._result is not None:
+            return self._result.total > 0
+        if self._total is not None:
+            return self._total > 0
         return self._search(offset=0, limit=1).total > 0
 
     async def aexists(self) -> bool:
+        if self._result is not None:
+            return self._result.total > 0
+        if self._total is not None:
+            return self._total > 0
         return (await self._asearch(offset=0, limit=1)).total > 0
 
     def __bool__(self) -> bool:
@@ -616,13 +639,18 @@ class DocumentQuerySet:
         return SearchResult(hits=hits, total=total, document_cls=self.document_cls)
 
     def _filter_query(self) -> tuple[str, QueryParams | None]:
-        if self._extra is not None:
-            query = self._extra
-            params: QueryParams | None = self._extra_params or None
+        compiled = self._compiled
+        if compiled is None:
+            if self._extra is not None:
+                query = self._extra
+                params: QueryParams | None = self._extra_params or None
+            else:
+                built = QueryCompiler(self.document_cls).compile(self._q)
+                query = built.query
+                params = built.params or None
+            self._compiled = (query, params)
         else:
-            compiled = QueryCompiler(self.document_cls).compile(self._q)
-            query = compiled.query
-            params = compiled.params or None
+            query, params = compiled
         if self._knn is not None:
             query, params = wrap_knn_query(query, self._knn, params)
         ensure_query_params(query, params)
@@ -740,6 +768,8 @@ class DocumentQuerySet:
         params: QueryParams | None,
         **kwargs: Any,
     ) -> Any:
+        if current_listener() is None:
+            return NOOP_OBSERVE
         return observe(
             kind=kind,
             document=self.document_cls.__name__,
@@ -760,6 +790,8 @@ class DocumentQuerySet:
 
 
 def _observe_key(document_cls: type[Document], key: str, command: str) -> Any:
+    if current_listener() is None:
+        return NOOP_OBSERVE
     return observe(
         kind="get",
         document=document_cls.__name__,
@@ -796,14 +828,23 @@ def _single_hit(document_cls: type[Document], result: SearchResult) -> SearchHit
     return result.hits[0]
 
 
-def _text_lookups(document_cls: type[Document], prefix: str = "") -> list[str]:
+def _text_lookups(document_cls: type[Document]) -> list[str]:
+    cached = document_cls.__dict__.get(_TEXT_LOOKUPS_ATTR)
+    if isinstance(cached, list):
+        return cached
+    names = _collect_text_lookups(document_cls, "")
+    setattr(document_cls, _TEXT_LOOKUPS_ATTR, names)
+    return names
+
+
+def _collect_text_lookups(document_cls: type[Document], prefix: str) -> list[str]:
     names: list[str] = []
     for name, field in document_cls._meta.fields.items():
         path = f"{prefix}__{name}" if prefix else name
         if isinstance(field, Text):
             names.append(path)
         elif isinstance(field, (Object, Nested)):
-            names.extend(_text_lookups(field.target, path))
+            names.extend(_collect_text_lookups(field.target, path))
     return names
 
 
@@ -852,20 +893,34 @@ def _knn_blob(
     )
 
 
-def _iter_hash_vectors(
-    document_cls: type[Document], parent: str = ""
+def _iter_hash_vectors(document_cls: type[Document]) -> list[tuple[str, Vector]]:
+    cached = document_cls.__dict__.get(_HASH_VECTORS_ATTR)
+    if isinstance(cached, list):
+        return cached
+    found = _collect_hash_vectors(document_cls, "")
+    setattr(document_cls, _HASH_VECTORS_ATTR, found)
+    return found
+
+
+def _collect_hash_vectors(
+    document_cls: type[Document], parent: str
 ) -> list[tuple[str, Vector]]:
     found: list[tuple[str, Vector]] = []
     for field in document_cls._meta.fields.values():
         if isinstance(field, Vector):
             found.append((field.hash_name(parent), field))
         elif isinstance(field, Object):
-            found.extend(_iter_hash_vectors(field.target, field.hash_name(parent)))
+            found.extend(_collect_hash_vectors(field.target, field.hash_name(parent)))
     return found
 
 
 def _has_vector(document_cls: type[Document]) -> bool:
-    return bool(_iter_hash_vectors(document_cls))
+    cached = document_cls.__dict__.get(_HAS_VECTOR_ATTR)
+    if isinstance(cached, bool):
+        return cached
+    found = bool(_iter_hash_vectors(document_cls))
+    setattr(document_cls, _HAS_VECTOR_ATTR, found)
+    return found
 
 
 def _maybe_decode(value: str | bytes) -> str:

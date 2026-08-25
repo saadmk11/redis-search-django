@@ -116,6 +116,15 @@ def catalog_queryset(request: HttpRequest) -> Any:
     return qs
 
 
+def _unfiltered(qs: Any) -> bool:
+    return (
+        not getattr(qs, "_none", False)
+        and not getattr(qs, "_extra", None)
+        and not getattr(qs, "_knn", None)
+        and not getattr(getattr(qs, "_q", None), "children", True)
+    )
+
+
 def _cast_rows(rows: list[dict[str, Any]]) -> list[dict[str, Any]]:
     out = []
     for row in rows:
@@ -147,12 +156,12 @@ class SearchView(SearchDebugMixin, SearchListViewMixin, ListView):
         return super().get(request, *args, **kwargs)
 
     def facets(self) -> dict[str, list[dict[str, Any]]]:
-        return self.get_search_queryset().facets(
+        return self.get_queryset().facets(
             "category__name", "tags__name", "vendor__name"
         )
 
     def get_context_data(self, **kwargs: Any) -> dict[str, Any]:
-        qs = self.get_search_queryset()
+        qs = self.get_queryset()
         raw_query, raw_params = qs.raw()
         data = query_data(self.request)
         context = super().get_context_data(query_data=data, **kwargs)
@@ -180,7 +189,11 @@ class SearchView(SearchDebugMixin, SearchListViewMixin, ListView):
         context["raw_params"] = display_params(raw_params)
         context["explain"] = qs.explain()
         context["sqlite_hidden"] = Product.objects.filter(available=False).count()
-        context["redis_count"] = ProductDocument.objects.all().count()
+        paginator = context.get("paginator")
+        if _unfiltered(qs) and paginator is not None:
+            context["redis_count"] = paginator.count
+        else:
+            context["redis_count"] = ProductDocument.objects.all().count()
         return context
 
 

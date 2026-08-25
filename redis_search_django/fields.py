@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import datetime
 import struct
-from collections.abc import Sequence
+from collections.abc import Callable, Sequence
 from decimal import Decimal
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Literal, cast
 from uuid import UUID
 
 from django.db import models
@@ -19,15 +19,16 @@ from redis.commands.search.field import VectorField as RedisVectorField
 from .embeddings import (
     Embedder,
     EmbedFn,
+    _as_numeric_list,
     as_floats,
     call_embed,
-    is_vector,
     resolve_embedder,
     resolve_source,
 )
 from .enums import Storage
 from .exceptions import ConfigurationError
 from .types import (
+    FieldInput,
     IndexValue,
     Named,
     is_prepare_hook,
@@ -35,6 +36,8 @@ from .types import (
 
 if TYPE_CHECKING:
     from .documents import Document
+
+_UNSET = object()
 
 
 class Field:
@@ -62,19 +65,32 @@ class Field:
         self.no_stem = no_stem
         self.phonetic = phonetic
         self.document_cls: type[Document] | None = None
+        self._prepare_hook: Callable[[models.Model], object] | object | None = _UNSET
 
     def bind(self, name: str, document_cls: type[Document]) -> None:
         self.name = name
         self.document_cls = document_cls
         if self.model_attr is None:
             self.model_attr = name
+        self._prepare_hook = _UNSET
 
     def copy(self) -> Field:
         """Shallow copy so subclasses do not mutate a shared base Field."""
         clone = self.__class__.__new__(self.__class__)
         clone.__dict__.update(self.__dict__)
         clone.document_cls = None
+        clone._prepare_hook = _UNSET
         return clone
+
+    def _resolved_prepare(
+        self, document_cls: type[Document]
+    ) -> Callable[[models.Model], object] | None:
+        hook = self._prepare_hook
+        if hook is _UNSET:
+            found = getattr(document_cls, f"prepare_{self.name}", None)
+            hook = found if is_prepare_hook(found) else None
+            self._prepare_hook = hook
+        return hook  # type: ignore[return-value]
 
     def redis_type(self) -> str:
         raise NotImplementedError
@@ -107,10 +123,10 @@ class Field:
         return str(raw)
 
     def prepare(self, instance: models.Model, document_cls: type[Document]) -> object:
+        hook = self._resolved_prepare(document_cls)
+        if hook is not None:
+            return hook(instance)
         assert self.name is not None
-        prepare = getattr(document_cls, f"prepare_{self.name}", None)
-        if is_prepare_hook(prepare):
-            return prepare(instance)
         return _resolve_attr(instance, self.model_attr or self.name)
 
 
@@ -321,6 +337,8 @@ class Vector(Field):
         self.initial_cap = initial_cap
         self.source = source
         self.embedder = embedder
+        code = "f" if self.vector_type == "FLOAT32" else "d"
+        self._struct_fmt = f"<{self.dims}{code}"
 
     def redis_type(self) -> str:
         return "VECTOR"
@@ -343,7 +361,7 @@ class Vector(Field):
         self, instance: models.Model, document_cls: type[Document]
     ) -> list[float] | None:
         assert self.name is not None
-        hook = getattr(document_cls, f"prepare_{self.name}", None)
+        hook = self._resolved_prepare(document_cls)
         if hook is not None:
             raw = hook(instance)
         else:
@@ -355,8 +373,17 @@ class Vector(Field):
             )
         if raw is None:
             return None
-        if is_vector(raw):
-            return as_floats(raw, field_name=self.name, dims=self.dims)
+        try:
+            values = _as_numeric_list(raw)
+        except (TypeError, ValueError):
+            values = None
+        if values is not None:
+            if len(values) != self.dims:
+                raise ConfigurationError(
+                    f"Vector field {self.name!r} expected {self.dims} dimensions, "
+                    f"got {len(values)}."
+                )
+            return values
         embedder = resolve_embedder(document_cls, self)
         if embedder is None:
             raise ConfigurationError(
@@ -366,7 +393,9 @@ class Vector(Field):
                 f"from prepare_{self.name}()."
             )
         return as_floats(
-            call_embed(embedder, raw), field_name=self.name, dims=self.dims
+            call_embed(embedder, cast(FieldInput, raw)),
+            field_name=self.name,
+            dims=self.dims,
         )
 
     def to_index_value(self, raw: object, *, storage: str = "json") -> IndexValue:
@@ -396,8 +425,7 @@ class Vector(Field):
         return [float(item) for item in struct.unpack(self._struct_format(), blob)]
 
     def _struct_format(self) -> str:
-        code = "f" if self.vector_type == "FLOAT32" else "d"
-        return f"<{self.dims}{code}"
+        return self._struct_fmt
 
 
 class Object(Field):

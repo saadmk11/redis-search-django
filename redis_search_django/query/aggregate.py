@@ -17,7 +17,7 @@ from ..redis import (
 )
 from ..schema import flatten_lookup
 from ..types import IndexValue, RedisAggregateResult
-from .compiler import QueryCompiler, QueryParams, ensure_query_params
+from .compiler import QueryParams, ensure_query_params
 from .instrument import observe, query_text
 
 if TYPE_CHECKING:
@@ -81,14 +81,15 @@ def _build_aggregate(
     query_params: QueryParams | None = None,
 ) -> tuple[type[Document], AggregateRequest, QueryParams | None]:
     document_cls = queryset.document_cls
-    compiled = QueryCompiler(document_cls).compile(queryset._q)
-    query = queryset._extra or compiled.query
+    if queryset._compiled is None:
+        queryset._filter_query()
+    compiled = queryset._compiled
+    assert compiled is not None
+    query, compiled_params = compiled
     if query_params is not None:
         params = query_params or None
-    elif queryset._extra is not None:
-        params = queryset._extra_params or None
     else:
-        params = compiled.params or None
+        params = compiled_params
 
     if isinstance(spec, AggregateRequest):
         request = spec

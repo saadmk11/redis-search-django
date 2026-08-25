@@ -12,6 +12,7 @@ from .enums import Storage
 from .fields import Field, Nested, Object, Tag, Vector
 
 _SCHEMA_CACHE_ATTR = "_rsd_schema_cache"
+_LOOKUP_CACHE_ATTR = "_rsd_lookup_cache"
 
 
 @dataclass(frozen=True)
@@ -253,6 +254,19 @@ def _redis_fields_for(
 
 def flatten_lookup(document_cls: type[Document], lookup: str) -> tuple[str, Field]:
     """Resolve a Django-style lookup path to (alias, leaf field)."""
+    cache = document_cls.__dict__.get(_LOOKUP_CACHE_ATTR)
+    if cache is None:
+        cache = {}
+        setattr(document_cls, _LOOKUP_CACHE_ATTR, cache)
+    cached = cache.get(lookup)
+    if cached is not None:
+        return cast(tuple[str, Field], cached)
+    resolved = _flatten_lookup(document_cls, lookup)
+    cache[lookup] = resolved
+    return resolved
+
+
+def _flatten_lookup(document_cls: type[Document], lookup: str) -> tuple[str, Field]:
     parts = [part for part in lookup.split("__") if part]
     parent_alias = ""
     current_doc = document_cls

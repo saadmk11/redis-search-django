@@ -228,6 +228,8 @@ def test_tag_startswith_requires_suffix_trie():
 def test_escape_text_and_tag():
     assert "\\|" in escape_text("a|b")
     assert "\\ " in escape_tag("hello world")
+    assert "\\|" in escape_tag("a|b", separator="|")
+    assert "\\|" in escape_tag("c|d", separator="|")
 
 
 def test_query_too_long(document_class):
