@@ -75,7 +75,7 @@ name, a setting, or a command flag, update the matching page in the same
 patch.
 
 GitHub Actions (`.github/workflows/docs.yml`) builds the site and deploys it
-to GitHub Pages on push to `main` or `1.0`. The published URL is
+to GitHub Pages on push to `main`. The published URL is
 https://saadmk11.github.io/redis-search-django/. In the repository
 **Settings → Pages**, set **Source** to **GitHub Actions** (once). That is a
 repo setting, not something the workflow can flip.
