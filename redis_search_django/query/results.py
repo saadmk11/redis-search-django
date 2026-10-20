@@ -59,7 +59,7 @@ class SearchResult:
     def to_queryset(self) -> models.QuerySet[models.Model]:
         model = self.document_cls._meta.model
         assert model is not None
-        manager = model._default_manager
+        manager: models.Manager[models.Model] = model._default_manager
         if not self.hits:
             return manager.none()
         pks = [hit.pk for hit in self.hits]
